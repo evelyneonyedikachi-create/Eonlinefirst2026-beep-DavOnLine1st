@@ -1,21 +1,22 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { FuturisticBackground } from "./components/FuturisticBackground";
 import { Header } from "./components/Header";
 import { LandingHero } from "./components/LandingHero";
-import { SalaryVisualizer } from "./components/SalaryVisualizer";
-import { CareerGrid } from "./components/CareerGrid";
-import { CareerDetailModal } from "./components/CareerDetailModal";
-import { CommitmentModal } from "./components/CommitmentModal";
+import { ProgramsPage } from "./components/ProgramsPage";
 import { BootcampSprints } from "./components/BootcampSprints";
 import { AiMentorChat } from "./components/AiMentorChat";
+import { AboutPage } from "./components/AboutPage";
+import { ContactPage } from "./components/ContactPage";
 import { Dashboard } from "./components/Dashboard";
+import { CareerDetailModal } from "./components/CareerDetailModal";
+import { CommitmentModal } from "./components/CommitmentModal";
 import { CAREER_TRACKS } from "./data/careersData";
 import { CareerTrack, UserProgressState } from "./types";
 import { getStoredProgress, saveProgress, calculateLevel } from "./utils/storage";
 import { sound } from "./utils/soundEffects";
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<string>("careers");
+  const [activeTab, setActiveTab] = useState<string>("home");
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [progress, setProgress] = useState<UserProgressState>(getStoredProgress());
   
@@ -52,6 +53,24 @@ export default function App() {
     }
 
     handleUpdateProgress({ xp: newXp, level: newLevel });
+  };
+
+  // Daily Streak Claim
+  const handleDailyCheckIn = () => {
+    const today = new Date().toISOString().split("T")[0];
+    if (progress.lastCheckInDate === today) return;
+
+    const lastDate = progress.lastCheckInDate ? new Date(progress.lastCheckInDate) : null;
+    const now = new Date();
+    const isConsecutive = lastDate && (now.getTime() - lastDate.getTime()) <= 48 * 60 * 60 * 1000;
+    const newStreak = isConsecutive ? progress.streakDays + 1 : 1;
+
+    sound.playLevelUp();
+    handleAwardXp(50);
+    handleUpdateProgress({
+      lastCheckInDate: today,
+      streakDays: newStreak,
+    });
   };
 
   // Toggle milestone completion
@@ -102,69 +121,62 @@ export default function App() {
     });
   };
 
+  const handleNavigateTab = (tabId: string, careerId?: string) => {
+    sound.playTab();
+    setActiveTab(tabId);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    if (careerId) {
+      const career = CAREER_TRACKS.find((c) => c.id === careerId);
+      if (career) {
+        setSelectedCareerDetail(career);
+      }
+    }
+  };
+
   const committedCareer = CAREER_TRACKS.find((c) => c.id === progress.committedCareerId) || null;
 
   return (
-    <div className="relative min-h-screen bg-[#05070a] text-[#e0e6ed] font-sans selection:bg-[#00f2ff]/30 selection:text-[#00f2ff]">
+    <div className="relative min-h-screen bg-[#05070a] text-[#e0e6ed] font-sans selection:bg-[#00f2ff]/30 selection:text-[#00f2ff] flex flex-col justify-between">
       {/* Dynamic Cyber Grid & Starfield Background */}
       <FuturisticBackground />
 
-      {/* Main Navigation Header */}
+      {/* Persistent Fixed Navigation Header across ALL pages */}
       <Header
         activeTab={activeTab}
-        onSelectTab={(tab) => {
-          sound.playTab();
-          setActiveTab(tab);
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }}
+        onSelectTab={handleNavigateTab}
         progress={progress}
+        onCheckIn={handleDailyCheckIn}
         soundEnabled={soundEnabled}
         onToggleSound={handleToggleSound}
+        committedCareerTitle={committedCareer?.title}
       />
 
-      {/* Main Container Content */}
-      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-20 space-y-12">
-        {/* Landing Hero Section (shown at top of career exploration) */}
-        {activeTab === "careers" && (
-          <>
-            <LandingHero
-              onExploreCareers={() => {
-                const el = document.getElementById("careers-section-anchor");
-                el?.scrollIntoView({ behavior: "smooth" });
-              }}
-              onLaunchBootcamp={() => {
-                sound.playTab();
-                setActiveTab("bootcamp");
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-              onMeetMentors={() => {
-                sound.playTab();
-                setActiveTab("mentor");
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-            />
-
-            {/* Salary Visualizer Module */}
-            <div className="pt-2">
-              <SalaryVisualizer />
-            </div>
-
-            {/* 8 Future-Proof Career Paths Grid */}
-            <div id="careers-section-anchor" className="pt-4">
-              <CareerGrid
-                careers={CAREER_TRACKS}
-                committedCareerId={progress.committedCareerId}
-                onSelectCareer={(career) => {
-                  sound.playClick();
-                  setSelectedCareerDetail(career);
-                }}
-                onCommitCareer={handleCommitCareer}
-              />
-            </div>
-          </>
+      {/* Main Page Container */}
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 flex-1 w-full">
+        {/* Page 1: Home (Low text density + 50% viewport Hero Video) */}
+        {activeTab === "home" && (
+          <LandingHero
+            onNavigateTab={handleNavigateTab}
+            soundEnabled={soundEnabled}
+            onToggleSound={handleToggleSound}
+          />
         )}
 
-        {/* Tab 2: Bootcamp Sprints Environment */}
+        {/* Page 2: Programs (9 Career Tracks + Salary Visualizer) */}
+        {activeTab === "programs" && (
+          <ProgramsPage
+            onSelectCareer={(career) => {
+              sound.playClick();
+              setSelectedCareerDetail(career);
+            }}
+            onCommitCareer={handleCommitCareer}
+            committedCareerId={progress.committedCareerId}
+            onNavigateBootcamp={() => handleNavigateTab("bootcamp")}
+          />
+        )}
+
+        {/* Page 3: Bootcamp Sprints (5-Sprint Roadmap) */}
         {activeTab === "bootcamp" && (
           <BootcampSprints
             progress={progress}
@@ -173,7 +185,7 @@ export default function App() {
           />
         )}
 
-        {/* Tab 3: AI Tech Lead Mentors */}
+        {/* Page 4: AI Mentors (Gemini 2.5 Tech Lead Chat) */}
         {activeTab === "mentor" && (
           <AiMentorChat
             progress={progress}
@@ -182,7 +194,24 @@ export default function App() {
           />
         )}
 
-        {/* Tab 4: Mission Control Dashboard */}
+        {/* Page 5: About (Why 15 Advantage, Manifesto & FAQ) */}
+        {activeTab === "about" && (
+          <AboutPage
+            onExplorePrograms={() => handleNavigateTab("programs")}
+            onLaunchBootcamp={() => handleNavigateTab("bootcamp")}
+            onContactUs={() => handleNavigateTab("contact")}
+          />
+        )}
+
+        {/* Page 6: Contact & Consultation */}
+        {activeTab === "contact" && (
+          <ContactPage
+            onExplorePrograms={() => handleNavigateTab("programs")}
+            onLaunchBootcamp={() => handleNavigateTab("bootcamp")}
+          />
+        )}
+
+        {/* Page 7: Mission Control Dashboard */}
         {activeTab === "dashboard" && (
           <Dashboard
             progress={progress}
@@ -190,22 +219,18 @@ export default function App() {
             onSaveNotes={(notes) => {
               handleUpdateProgress({ notes: { ...progress.notes, ...notes } });
             }}
-            onSelectTab={(tab) => {
-              sound.playTab();
-              setActiveTab(tab);
-              window.scrollTo({ top: 0, behavior: "smooth" });
-            }}
+            onSelectTab={handleNavigateTab}
           />
         )}
       </main>
 
       {/* Frosted Glass Footer */}
-      <footer className="relative z-10 border-t border-white/10 bg-[#05070a]/80 backdrop-blur-xl py-8 px-4 text-center text-xs text-slate-400 font-mono space-y-2">
-        <div className="flex items-center justify-center gap-2 text-[#e0e6ed]">
-          <span className="w-2 h-2 rounded-full bg-[#00f2ff] shadow-[0_0_8px_#00f2ff]" />
+      <footer className="relative z-10 border-t border-white/10 bg-[#05070a]/90 backdrop-blur-xl py-10 px-4 text-center text-base text-slate-300 font-mono space-y-3">
+        <div className="flex items-center justify-center gap-2 text-[#e0e6ed] text-base font-semibold">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#00f2ff] shadow-[0_0_10px_#00f2ff]" />
           <span className="tracking-wide">ONLINEFIRST AI Studio // Frosted Glass Interface</span>
         </div>
-        <p className="max-w-xl mx-auto text-slate-400 text-[11px]">
+        <p className="max-w-2xl mx-auto text-slate-300 text-base leading-relaxed">
           Empowering the next generation with real-world AI engineering, high-earning specialization tracks, and hands-on code deliverables.
         </p>
       </footer>
@@ -222,8 +247,7 @@ export default function App() {
           isCommitted={progress.committedCareerId === selectedCareerDetail.id}
           onJumpToSprint={(sprintNum) => {
             setTargetSprintNum(sprintNum);
-            setActiveTab("bootcamp");
-            window.scrollTo({ top: 0, behavior: "smooth" });
+            handleNavigateTab("bootcamp");
           }}
         />
       )}

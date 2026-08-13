@@ -59,23 +59,23 @@ export const VisionQuestSandbox: React.FC = () => {
   };
 
   return (
-    <div className="rounded-2xl bg-[#0b101c] border border-cyan-500/30 p-5 md:p-6 space-y-6 shadow-2xl">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+    <div className="rounded-2xl bg-[#0b101c] border border-cyan-500/30 p-6 md:p-7 space-y-6 shadow-2xl">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
         <div>
-          <div className="flex items-center gap-2 text-cyan-400 font-mono text-xs font-bold uppercase tracking-wider mb-1">
-            <Eye className="w-4 h-4" />
+          <div className="flex items-center gap-2 text-cyan-400 font-mono text-base font-bold uppercase tracking-wider mb-1.5">
+            <Eye className="w-5 h-5" />
             <span>Sprint 3 Simulator // YOLOv8 & OpenCV Computer Vision HUD</span>
           </div>
-          <h3 className="text-xl font-black text-white">
+          <h3 className="text-2xl font-black text-white">
             {active.title}
           </h3>
-          <p className="text-xs text-slate-400">
+          <p className="text-base text-slate-300 mt-1">
             {active.subtitle}
           </p>
         </div>
 
         {/* Scenario Switchers */}
-        <div className="flex flex-wrap items-center gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800">
+        <div className="flex flex-wrap items-center gap-2 bg-slate-900 p-1.5 rounded-xl border border-slate-800">
           {(["bedroom", "lego", "pokemon", "drone"] as const).map((scen) => (
             <button
               key={scen}
@@ -83,7 +83,7 @@ export const VisionQuestSandbox: React.FC = () => {
                 sound.playClick();
                 setSelectedScenario(scen);
               }}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase font-mono transition-all cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-lg text-base font-semibold uppercase font-mono transition-all cursor-pointer ${
                 selectedScenario === scen
                   ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-bold shadow-md"
                   : "text-slate-400 hover:text-white"
@@ -96,32 +96,32 @@ export const VisionQuestSandbox: React.FC = () => {
       </div>
 
       {/* Camera Simulator Display Box */}
-      <div className="relative w-full h-80 rounded-2xl overflow-hidden border border-cyan-500/40 bg-gradient-to-br bg-slate-950 flex items-center justify-center shadow-inner">
+      <div className="relative w-full h-84 rounded-2xl overflow-hidden border border-cyan-500/40 bg-gradient-to-br bg-slate-950 flex items-center justify-center shadow-inner">
         {/* Synthetic Video Feed Background Grid */}
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px]" />
 
         {/* Cyber HUD Overlay Lines */}
         <div className="absolute inset-0 pointer-events-none p-4 flex flex-col justify-between z-20">
-          <div className="flex items-center justify-between font-mono text-[10px] text-cyan-400">
-            <div className="flex items-center gap-2">
-              <span className="flex h-2 w-2 relative">
+          <div className="flex items-center justify-between font-mono text-base text-cyan-400">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-2.5 w-2.5 relative">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
               </span>
               <span>LIVE CAM FEED // 60 FPS // YOLOv8n</span>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <span>RES: 1920x1080</span>
               <span>LATENCY: 12ms</span>
             </div>
           </div>
 
-          <div className="flex items-center justify-between font-mono text-[10px] text-slate-400">
+          <div className="flex items-center justify-between font-mono text-base text-slate-300">
             <div className="flex items-center gap-2">
-              <Crosshair className="w-4 h-4 text-cyan-400" />
+              <Crosshair className="w-5 h-5 text-cyan-400" />
               <span>TARGET ACQUISITION: ACTIVE</span>
             </div>
-            <span className="text-emerald-400 font-bold">INFERENCE ENGINE: ONLINE</span>
+            <span className="text-emerald-400 font-bold">INFERENCE: ONLINE</span>
           </div>
         </div>
 
@@ -132,7 +132,7 @@ export const VisionQuestSandbox: React.FC = () => {
             .map((obj, idx) => (
               <div
                 key={idx}
-                className={`absolute border-2 rounded-lg p-1.5 transition-all duration-300 pointer-events-none z-10 ${obj.color}`}
+                className={`absolute border-2 rounded-lg p-2 transition-all duration-300 pointer-events-none z-10 ${obj.color}`}
                 style={{
                   left: obj.x,
                   top: obj.y,
@@ -140,7 +140,7 @@ export const VisionQuestSandbox: React.FC = () => {
                   height: obj.h,
                 }}
               >
-                <div className="absolute -top-5 left-0 px-1.5 py-0.5 rounded bg-slate-900/90 border border-slate-700 text-[10px] font-mono font-bold flex items-center gap-1 shadow-md">
+                <div className="absolute -top-7 left-0 px-2 py-0.5 rounded bg-slate-900/90 border border-slate-700 text-base font-mono font-bold flex items-center gap-1.5 shadow-md">
                   <span>{obj.label}</span>
                   <span className="text-cyan-300">{Math.round(obj.conf * 100)}%</span>
                 </div>
@@ -150,10 +150,10 @@ export const VisionQuestSandbox: React.FC = () => {
         {/* Simulated Alert Overlay */}
         {isAlertTriggered && (
           <div className="absolute inset-0 bg-rose-950/40 border-4 border-rose-500 flex items-center justify-center z-30 animate-pulse">
-            <div className="p-4 rounded-2xl bg-slate-950/95 border border-rose-500 text-center space-y-1 shadow-2xl">
-              <ShieldAlert className="w-8 h-8 text-rose-400 mx-auto animate-bounce" />
-              <h4 className="text-white font-black font-mono text-sm">INTRUDER DETECTED!</h4>
-              <p className="text-slate-300 text-xs font-mono">
+            <div className="p-5 rounded-2xl bg-slate-950/95 border border-rose-500 text-center space-y-2 shadow-2xl">
+              <ShieldAlert className="w-10 h-10 text-rose-400 mx-auto animate-bounce" />
+              <h4 className="text-white font-black font-mono text-lg">INTRUDER DETECTED!</h4>
+              <p className="text-slate-200 text-base font-mono">
                 Screenshot captured & SMS dispatched to phone: +1 (555) ***-**42
               </p>
             </div>
@@ -162,12 +162,12 @@ export const VisionQuestSandbox: React.FC = () => {
       </div>
 
       {/* Control sliders */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-base">
         {/* Confidence Threshold */}
-        <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800">
-          <div className="flex justify-between font-mono mb-1.5">
-            <span className="text-slate-400 uppercase text-[10px]">Confidence Filter Threshold:</span>
-            <span className="text-cyan-300 font-bold">{Math.round(confidenceThreshold * 100)}%</span>
+        <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2">
+          <div className="flex justify-between font-mono">
+            <span className="text-slate-300 uppercase text-base">Confidence Filter:</span>
+            <span className="text-cyan-300 font-bold text-base">{Math.round(confidenceThreshold * 100)}%</span>
           </div>
           <input
             type="range"
@@ -176,22 +176,22 @@ export const VisionQuestSandbox: React.FC = () => {
             step={0.05}
             value={confidenceThreshold}
             onChange={(e) => setConfidenceThreshold(Number(e.target.value))}
-            className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-400"
+            className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-400"
           />
         </div>
 
         {/* Toggle Boxes */}
-        <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+        <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
           <div>
-            <span className="text-slate-200 font-semibold block">Render Bounding Boxes</span>
-            <span className="text-[10px] text-slate-400 font-mono">OpenCV cv2.rectangle()</span>
+            <span className="text-slate-200 font-semibold block text-base">Render Bounding Boxes</span>
+            <span className="text-base text-slate-400 font-mono">OpenCV cv2.rectangle()</span>
           </div>
           <button
             onClick={() => {
               sound.playClick();
               setShowBoxes(!showBoxes);
             }}
-            className={`px-3 py-1 rounded-lg text-xs font-mono font-bold transition-all ${
+            className={`px-3.5 py-1.5 rounded-lg text-base font-mono font-bold transition-all ${
               showBoxes ? "bg-cyan-500 text-slate-950" : "bg-slate-800 text-slate-400"
             }`}
           >
@@ -203,10 +203,10 @@ export const VisionQuestSandbox: React.FC = () => {
         <div className="flex items-end">
           <button
             onClick={handleTriggerTest}
-            className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-slate-950 font-black text-xs uppercase font-mono tracking-wider flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(244,63,94,0.3)] transition-all cursor-pointer"
+            className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-slate-950 font-black text-base uppercase font-mono tracking-wider flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(244,63,94,0.3)] transition-all cursor-pointer"
           >
-            <Bell className="w-4 h-4 text-slate-950" />
-            <span>Simulate Intruder Alarm Event</span>
+            <Bell className="w-5 h-5 text-slate-950" />
+            <span>Simulate Intruder Alarm</span>
           </button>
         </div>
       </div>
