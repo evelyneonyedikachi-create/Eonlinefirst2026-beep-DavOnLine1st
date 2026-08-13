@@ -11,7 +11,11 @@ export const INITIAL_PROGRESS: UserProgressState = {
   commitmentDate: null,
   targetAge: 19,
   completedMilestones: ["s1-m1", "s1-m2"],
+  completedTimelineSteps: {
+    "sprint-1": [1, 2],
+  },
   completedSprints: [],
+  submissions: {},
   unlockedBadges: ["initiate", "terminal_scout"],
   notes: {},
   soundEnabled: true,

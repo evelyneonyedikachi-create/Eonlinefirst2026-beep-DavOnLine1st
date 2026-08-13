@@ -11,7 +11,7 @@ import { Dashboard } from "./components/Dashboard";
 import { CareerDetailModal } from "./components/CareerDetailModal";
 import { CommitmentModal } from "./components/CommitmentModal";
 import { CAREER_TRACKS } from "./data/careersData";
-import { CareerTrack, UserProgressState } from "./types";
+import { CareerTrack, UserProgressState, SprintSubmissionData } from "./types";
 import { getStoredProgress, saveProgress, calculateLevel } from "./utils/storage";
 import { sound } from "./utils/soundEffects";
 
@@ -121,13 +121,69 @@ export default function App() {
     });
   };
 
-  const handleNavigateTab = (tabId: string, careerId?: string) => {
+  // Toggle timeline step completion
+  const handleToggleTimelineStep = (sprintId: string, stepNumber: number) => {
+    sound.playClick();
+    const currentSteps = progress.completedTimelineSteps?.[sprintId] || [];
+    const isStepDone = currentSteps.includes(stepNumber);
+
+    let updatedSteps: number[];
+    let newXp = progress.xp;
+
+    if (isStepDone) {
+      updatedSteps = currentSteps.filter((num) => num !== stepNumber);
+      newXp = Math.max(0, progress.xp - 50);
+    } else {
+      updatedSteps = [...currentSteps, stepNumber];
+      newXp = progress.xp + 50;
+      sound.playXpGain();
+    }
+
+    const newLevel = calculateLevel(newXp).level;
+    const updatedMap = {
+      ...(progress.completedTimelineSteps || {}),
+      [sprintId]: updatedSteps,
+    };
+
+    handleUpdateProgress({
+      completedTimelineSteps: updatedMap,
+      xp: newXp,
+      level: newLevel,
+    });
+  };
+
+  // Submit completed sprint
+  const handleSubmitSprint = (submission: SprintSubmissionData) => {
+    sound.playLevelUp();
+    const newXp = progress.xp + 300;
+    const newLevel = calculateLevel(newXp).level;
+
+    const completedSprints = progress.completedSprints.includes(submission.sprintId)
+      ? progress.completedSprints
+      : [...progress.completedSprints, submission.sprintId];
+
+    const submissions = {
+      ...(progress.submissions || {}),
+      [submission.sprintId]: submission,
+    };
+
+    handleUpdateProgress({
+      completedSprints,
+      submissions,
+      xp: newXp,
+      level: newLevel,
+    });
+  };
+
+  const handleNavigateTab = (tabId: string, param?: string | number) => {
     sound.playTab();
     setActiveTab(tabId);
     window.scrollTo({ top: 0, behavior: "smooth" });
 
-    if (careerId) {
-      const career = CAREER_TRACKS.find((c) => c.id === careerId);
+    if (typeof param === "number") {
+      setTargetSprintNum(param);
+    } else if (typeof param === "string" && tabId === "programs") {
+      const career = CAREER_TRACKS.find((c) => c.id === param);
       if (career) {
         setSelectedCareerDetail(career);
       }
@@ -181,7 +237,10 @@ export default function App() {
           <BootcampSprints
             progress={progress}
             onToggleMilestone={handleToggleMilestone}
+            onToggleTimelineStep={handleToggleTimelineStep}
+            onSubmitSprint={handleSubmitSprint}
             activeSprintNum={targetSprintNum}
+            onNavigateTab={handleNavigateTab}
           />
         )}
 

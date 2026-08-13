@@ -26,16 +26,76 @@ export interface CareerTrack {
   growthProjection: string;
 }
 
+export interface SprintTimelineStep {
+  stepNumber: number;
+  name: string;
+  duration: string;
+  category: 'learn' | 'try' | 'build' | 'test' | 'publish' | 'submit';
+  description: string;
+  actionTip: string;
+}
+
+export interface SprintDeliverable {
+  id: string;
+  title: string;
+  description: string;
+  required: boolean;
+}
+
+export interface SprintLearningResource {
+  category: 'start' | 'watch' | 'practise' | 'stuck';
+  title: string;
+  platform: string;
+  url: string;
+  whatItTeaches: string;
+  whenToUse: string;
+  buttonLabel: string;
+  badge: string;
+}
+
+export interface LabChallengeStep {
+  step: number;
+  task: string;
+  targetLine: string;
+  hint1: string;
+  hint2: string;
+  solutionCode: string;
+  completedMessage: string;
+}
+
+export interface SprintLabData {
+  title: string;
+  language: string;
+  instructions: string;
+  initialCode: string;
+  challenges: LabChallengeStep[];
+}
+
+export interface SprintVisualMockup {
+  type: string;
+  title: string;
+  tagline: string;
+  badge: string;
+  color: string;
+  previewPoints: string[];
+}
+
 export interface BootcampSprint {
   id: string;
   sprintNumber: number;
   title: string;
   codename: string;
+  estimatedTime: string;
+  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+  skillsList: string[];
+  finalOutput: string;
   duration: string;
   goal: string;
   motivationHook: string;
+  bragPhrases: string[];
   color: string;
   accent: string;
+  visualMockup: SprintVisualMockup;
   curriculum: {
     module: string;
     description: string;
@@ -47,13 +107,27 @@ export interface BootcampSprint {
     deliverable: string;
     bragFactor: string;
   };
+  timelineSteps: SprintTimelineStep[];
+  deliverables: SprintDeliverable[];
   milestones: {
     id: string;
     title: string;
     xp: number;
     description: string;
   }[];
+  learningResources: SprintLearningResource[];
+  labData: SprintLabData;
+  whatYouCanNowDo: string[];
   sandboxType: 'stock' | 'nlp' | 'vision' | 'agent' | 'portfolio' | 'redteam';
+}
+
+export interface SprintSubmissionData {
+  sprintId: string;
+  liveUrl: string;
+  screenshotName?: string;
+  description: string;
+  customizationNote: string;
+  submittedAt: string;
 }
 
 export interface UserProgressState {
@@ -65,7 +139,9 @@ export interface UserProgressState {
   commitmentDate: string | null;
   targetAge: number;
   completedMilestones: string[];
+  completedTimelineSteps: Record<string, number[]>; // sprintId -> array of completed step numbers (1..6)
   completedSprints: string[];
+  submissions: Record<string, SprintSubmissionData>;
   unlockedBadges: string[];
   notes: Record<string, string>;
   soundEnabled: boolean;
