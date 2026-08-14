@@ -11,7 +11,12 @@ import {
   CheckCircle2, 
   Terminal,
   Cpu,
-  Flame
+  Flame,
+  ShieldCheck,
+  Lock,
+  AlertTriangle,
+  Info,
+  ArrowRight
 } from "lucide-react";
 import { MentorMessage, MentorPersona, CodeReviewResult, MicroChallenge, UserProgressState } from "../types";
 import { MENTOR_PERSONAS } from "../data/mentorPersonas";
@@ -21,17 +26,23 @@ interface AiMentorChatProps {
   progress: UserProgressState;
   committedCareerTitle?: string;
   onAwardXp: (amount: number) => void;
+  onNavigateTab?: (tab: string) => void;
 }
 
 export const AiMentorChat: React.FC<AiMentorChatProps> = ({
   progress,
   committedCareerTitle,
   onAwardXp,
+  onNavigateTab,
 }) => {
   const [activeTab, setActiveTab] = useState<"chat" | "review" | "challenge">("chat");
   const [selectedPersonaId, setSelectedPersonaId] = useState<string>("alex");
   const [inputMessage, setInputMessage] = useState<string>("");
   const [isSending, setIsSending] = useState<boolean>(false);
+  const [safetyNoticeAcknowledged, setSafetyNoticeAcknowledged] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("onlinefirst_ai_safety_acknowledged") === "true";
+  });
 
   // Chat history state with rich default kickoff message
   const [messages, setMessages] = useState<MentorMessage[]>([
@@ -80,6 +91,14 @@ print("Model coefficients:", model.coef_)`
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const handleAcknowledgeSafety = () => {
+    sound.playClick();
+    setSafetyNoticeAcknowledged(true);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("onlinefirst_ai_safety_acknowledged", "true");
+    }
+  };
 
   const handleSendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -234,6 +253,71 @@ print("Model coefficients:", model.coef_)`
         </div>
       </div>
 
+      {/* Safety & Transparency Interstitial Banner / "Before You Chat" Modal */}
+      {!safetyNoticeAcknowledged && (
+        <div className="rounded-3xl bg-gradient-to-br from-[#0a192f] via-[#05070a] to-[#0a192f] border border-[#00f2ff]/40 p-6 md:p-8 shadow-[0_0_30px_rgba(0,242,255,0.15)] space-y-5 animate-in fade-in duration-300">
+          <div className="flex items-center justify-between border-b border-white/10 pb-4">
+            <div className="flex items-center gap-2.5 text-[#00f2ff] font-mono text-sm font-bold uppercase">
+              <ShieldCheck className="w-5 h-5 text-[#00f2ff]" />
+              <span>Before You Chat · AI Safety & Privacy Notice</span>
+            </div>
+            {onNavigateTab && (
+              <button
+                onClick={() => onNavigateTab("ai-disclaimer")}
+                className="text-xs font-mono text-slate-400 hover:text-[#00f2ff] transition-colors cursor-pointer"
+              >
+                AI Transparency Details →
+              </button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-1.5">
+              <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
+                <AlertTriangle className="w-4 h-4" />
+                <span>AI can make mistakes</span>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Mentors are AI language models. Always test and verify generated code before running it.
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-1.5">
+              <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+                <Lock className="w-4 h-4" />
+                <span>Protect your privacy</span>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Do not share private info (full name, address, school, phone, or passwords) in chat.
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-1.5">
+              <div className="flex items-center gap-2 text-[#00f2ff] font-bold text-sm">
+                <Bot className="w-4 h-4" />
+                <span>Ask a trusted adult</span>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                For health, legal, school, or personal decisions, always speak with a parent or teacher.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-2">
+            <span className="text-xs text-slate-400 font-mono">
+              In accordance with Article 50 of the EU AI Act (AI System Transparency)
+            </span>
+            <button
+              id="acknowledge-ai-safety-btn"
+              onClick={handleAcknowledgeSafety}
+              className="py-2.5 px-6 rounded-xl bg-[#00f2ff] hover:bg-[#38f6ff] text-[#05070a] font-bold text-sm font-mono uppercase tracking-wide cursor-pointer transition-all shadow-[0_0_15px_rgba(0,242,255,0.3)]"
+            >
+              I Understand — Start Chat
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Persona Selection Bar in Frosted Glass */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {MENTOR_PERSONAS.map((persona) => {
@@ -326,19 +410,37 @@ print("Model coefficients:", model.coef_)`
 
       {/* Tab 1: Live Chat in Frosted Glass */}
       {activeTab === "chat" && (
-        <div className="rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 p-6 md:p-7 space-y-4 shadow-2xl flex flex-col h-[560px]">
-          {/* Chat active mentor indicator */}
-          <div className="flex items-center justify-between border-b border-white/10 pb-4 text-base">
-            <div className="flex items-center gap-3 font-mono">
-              <span className="text-2xl">{activePersona.avatar}</span>
-              <div>
-                <span className="font-bold text-white block text-lg">{activePersona.name}</span>
-                <span className="text-slate-300 text-base">{activePersona.role}</span>
+        <div className="rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 p-6 md:p-7 space-y-4 shadow-2xl flex flex-col h-[600px]">
+          {/* Chat active mentor indicator & persistent AI Notice */}
+          <div className="border-b border-white/10 pb-3 space-y-2.5">
+            <div className="flex items-center justify-between text-base">
+              <div className="flex items-center gap-3 font-mono">
+                <span className="text-2xl">{activePersona.avatar}</span>
+                <div>
+                  <span className="font-bold text-white block text-lg">{activePersona.name}</span>
+                  <span className="text-slate-300 text-base">{activePersona.role}</span>
+                </div>
+              </div>
+
+              <div className="text-base font-mono text-[#00f2ff] bg-[#00f2ff]/10 px-3.5 py-1.5 rounded-lg border border-[#00f2ff]/20">
+                Target: {committedCareerTitle || "AI Explorer"}
               </div>
             </div>
 
-            <div className="text-base font-mono text-[#00f2ff] bg-[#00f2ff]/10 px-3.5 py-1.5 rounded-lg border border-[#00f2ff]/20">
-              Target: {committedCareerTitle || "AI Explorer"}
+            {/* Continuous AI System Notice Header */}
+            <div className="p-2.5 rounded-xl bg-black/40 border border-white/10 flex items-center justify-between text-xs font-mono text-slate-400">
+              <span className="flex items-center gap-1.5">
+                <Info className="w-3.5 h-3.5 text-[#00f2ff]" />
+                <span>AI Assistant Notice: Responses are simulated for educational exploration.</span>
+              </span>
+              {onNavigateTab && (
+                <button
+                  onClick={() => onNavigateTab("ai-disclaimer")}
+                  className="text-[#00f2ff] hover:underline cursor-pointer"
+                >
+                  EU AI Act Info
+                </button>
+              )}
             </div>
           </div>
 
@@ -363,7 +465,7 @@ print("Model coefficients:", model.coef_)`
                     }`}
                   >
                     <p className="whitespace-pre-wrap">{msg.text}</p>
-                    <span className="text-base font-mono opacity-60 block mt-2 text-right">
+                    <span className="text-xs font-mono opacity-60 block mt-2 text-right">
                       {msg.timestamp}
                     </span>
                   </div>
@@ -380,23 +482,28 @@ print("Model coefficients:", model.coef_)`
           </div>
 
           {/* Input Form in Frosted Glass */}
-          <form onSubmit={handleSendMessage} className="flex gap-3 pt-3 border-t border-white/10">
-            <input
-              type="text"
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              placeholder={`Ask ${activePersona.name} anything about code, Python, bots, or careers...`}
-              className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-base text-white focus:outline-none focus:border-[#00f2ff] placeholder:text-slate-500 font-mono backdrop-blur-md"
-            />
-            <button
-              type="submit"
-              disabled={isSending || !inputMessage.trim()}
-              className="py-3 px-6 rounded-xl bg-[#00f2ff] hover:bg-[#33f5ff] text-[#05070a] font-black text-base uppercase font-mono tracking-wider flex items-center gap-2 shadow-[0_0_15px_rgba(0,242,255,0.35)] transition-all cursor-pointer disabled:opacity-50"
-            >
-              <Send className="w-4 h-4" />
-              <span className="hidden sm:inline">Send</span>
-            </button>
-          </form>
+          <div className="space-y-2 pt-2 border-t border-white/10">
+            <form onSubmit={handleSendMessage} className="flex gap-3">
+              <input
+                type="text"
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                placeholder={`Ask ${activePersona.name} about Python, algorithms, or careers (don't share private info)...`}
+                className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-base text-white focus:outline-none focus:border-[#00f2ff] placeholder:text-slate-500 font-mono backdrop-blur-md"
+              />
+              <button
+                type="submit"
+                disabled={isSending || !inputMessage.trim()}
+                className="py-3 px-6 rounded-xl bg-[#00f2ff] hover:bg-[#33f5ff] text-[#05070a] font-black text-base uppercase font-mono tracking-wider flex items-center gap-2 shadow-[0_0_15px_rgba(0,242,255,0.35)] transition-all cursor-pointer disabled:opacity-50"
+              >
+                <Send className="w-4 h-4" />
+                <span className="hidden sm:inline">Send</span>
+              </button>
+            </form>
+            <div className="text-[11px] font-mono text-slate-500 text-center">
+              🔒 Privacy Reminder: Never share real full names, home addresses, phone numbers, or passwords.
+            </div>
+          </div>
         </div>
       )}
 

@@ -9,12 +9,17 @@ import { AiMentorChat } from "./components/AiMentorChat";
 import { AboutPage } from "./components/AboutPage";
 import { ContactPage } from "./components/ContactPage";
 import { Dashboard } from "./components/Dashboard";
+import { PrivacyPolicyPage } from "./components/PrivacyPolicyPage";
+import { TermsOfUsePage } from "./components/TermsOfUsePage";
+import { CopyrightPage } from "./components/CopyrightPage";
+import { AiDisclaimerPage } from "./components/AiDisclaimerPage";
 import { CareerDetailModal } from "./components/CareerDetailModal";
 import { CommitmentModal } from "./components/CommitmentModal";
 import { CAREER_TRACKS } from "./data/careersData";
 import { CareerTrack, UserProgressState, SprintSubmissionData } from "./types";
 import { getStoredProgress, saveProgress, calculateLevel } from "./utils/storage";
 import { sound } from "./utils/soundEffects";
+import { ShieldCheck, Lock, FileText, Info, Bot } from "lucide-react";
 
 export default function App() {
   // Two-stage entry: Start with intro video page
@@ -40,6 +45,12 @@ export default function App() {
     const newState = { ...progress, ...updated };
     setProgress(newState);
     saveProgress(newState);
+  };
+
+  // Direct replace progress state (e.g. from JSON import or reset)
+  const handleSetFullProgress = (newProgress: UserProgressState) => {
+    setProgress(newProgress);
+    saveProgress(newProgress);
   };
 
   // Award XP with sound check
@@ -264,12 +275,13 @@ export default function App() {
           />
         )}
 
-        {/* Page 4: AI Mentors (Gemini 2.5 Tech Lead Chat) */}
+        {/* Page 4: AI Mentors (Gemini Tech Lead Chat + Code Review) */}
         {activeTab === "mentor" && (
           <AiMentorChat
             progress={progress}
             committedCareerTitle={committedCareer?.title}
             onAwardXp={handleAwardXp}
+            onNavigateTab={handleNavigateTab}
           />
         )}
 
@@ -287,6 +299,7 @@ export default function App() {
           <ContactPage
             onExplorePrograms={() => handleNavigateTab("programs")}
             onLaunchBootcamp={() => handleNavigateTab("bootcamp")}
+            onNavigateTab={handleNavigateTab}
           />
         )}
 
@@ -300,47 +313,100 @@ export default function App() {
             }}
             onSelectTab={handleNavigateTab}
             onCheckIn={handleDailyCheckIn}
+            onUpdateProgress={handleSetFullProgress}
+          />
+        )}
+
+        {/* Page 8: Privacy Policy (GDPR / Teen Privacy) */}
+        {activeTab === "privacy" && (
+          <PrivacyPolicyPage
+            onBack={() => handleNavigateTab("home")}
+            onNavigateTab={handleNavigateTab}
+          />
+        )}
+
+        {/* Page 9: Terms of Use */}
+        {activeTab === "terms" && (
+          <TermsOfUsePage
+            onBack={() => handleNavigateTab("home")}
+            onNavigateTab={handleNavigateTab}
+          />
+        )}
+
+        {/* Page 10: Copyright & Attribution */}
+        {activeTab === "copyright" && (
+          <CopyrightPage
+            onBack={() => handleNavigateTab("home")}
+            onNavigateTab={handleNavigateTab}
+          />
+        )}
+
+        {/* Page 11: AI Disclaimer & Transparency (Article 50 EU AI Act) */}
+        {activeTab === "ai-disclaimer" && (
+          <AiDisclaimerPage
+            onBack={() => handleNavigateTab("home")}
+            onNavigateTab={handleNavigateTab}
           />
         )}
       </main>
 
-      {/* Clean Glass Footer */}
-      <footer className="relative z-10 border-t border-white/10 bg-[#05070a]/90 backdrop-blur-xl py-10 px-4 text-center text-base text-slate-300 font-mono space-y-3">
-        <div className="flex items-center justify-center gap-2 text-[#e0e6ed] text-base font-semibold">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#00f2ff] shadow-[0_0_10px_#00f2ff]" />
-          <span className="tracking-wide">ONLINEFIRST AI Studio // Built for Future AI Engineers</span>
+      {/* Consistent Legal & Compliance Global Footer */}
+      <footer className="relative z-10 border-t border-white/10 bg-[#05070a]/95 backdrop-blur-xl py-12 px-4 sm:px-6 lg:px-8 text-slate-300 font-mono space-y-6">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+          <div className="space-y-2">
+            <div className="flex items-center justify-center md:justify-start gap-2.5 text-white font-bold text-base">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#00f2ff] shadow-[0_0_10px_#00f2ff]" />
+              <span className="tracking-wide">OnlineFirst AI Studio</span>
+              <span className="text-xs text-[#00f2ff] bg-[#00f2ff]/10 px-2.5 py-0.5 rounded-full border border-[#00f2ff]/20">
+                Non-Profit Education
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 max-w-lg leading-relaxed">
+              OnlineFirst is a private non-profit entity. We provide free, local-first interactive AI engineering curriculum and mentorship to empower next-generation builders.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs text-slate-400">
+            <button 
+              onClick={() => handleNavigateTab("privacy")} 
+              className="hover:text-[#00f2ff] transition-colors cursor-pointer flex items-center gap-1.5"
+            >
+              <Lock className="w-3.5 h-3.5" />
+              <span>Privacy Notice (GDPR)</span>
+            </button>
+            <button 
+              onClick={() => handleNavigateTab("terms")} 
+              className="hover:text-[#00f2ff] transition-colors cursor-pointer flex items-center gap-1.5"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>Terms of Use</span>
+            </button>
+            <button 
+              onClick={() => handleNavigateTab("copyright")} 
+              className="hover:text-[#00f2ff] transition-colors cursor-pointer flex items-center gap-1.5"
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>Copyright & IP</span>
+            </button>
+            <button 
+              onClick={() => handleNavigateTab("ai-disclaimer")} 
+              className="hover:text-[#00f2ff] transition-colors cursor-pointer flex items-center gap-1.5"
+            >
+              <Bot className="w-3.5 h-3.5" />
+              <span>AI Transparency (EU AI Act)</span>
+            </button>
+            <button 
+              onClick={() => handleNavigateTab("contact")} 
+              className="hover:text-[#00f2ff] transition-colors cursor-pointer"
+            >
+              Contact Desk
+            </button>
+          </div>
         </div>
-        <p className="max-w-2xl mx-auto text-slate-300 text-base leading-relaxed">
-          Empowering teenagers with real-world AI engineering, high-growth specialization tracks, and hands-on portfolio deliverables.
-        </p>
-        <div className="pt-2 flex items-center justify-center gap-6 text-sm text-slate-400">
-          <button 
-            onClick={() => handleNavigateTab("intro")} 
-            className="hover:text-[#00f2ff] transition-colors cursor-pointer"
-          >
-            Watch Intro Video
-          </button>
-          <span>·</span>
-          <button 
-            onClick={() => handleNavigateTab("programs")} 
-            className="hover:text-[#00f2ff] transition-colors cursor-pointer"
-          >
-            9 Career Tracks
-          </button>
-          <span>·</span>
-          <button 
-            onClick={() => handleNavigateTab("bootcamp")} 
-            className="hover:text-[#00f2ff] transition-colors cursor-pointer"
-          >
-            5 Build Sprints
-          </button>
-          <span>·</span>
-          <button 
-            onClick={() => handleNavigateTab("contact")} 
-            className="hover:text-[#00f2ff] transition-colors cursor-pointer"
-          >
-            Contact & Consultation
-          </button>
+
+        <div className="max-w-7xl mx-auto pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 text-center sm:text-left">
+          <span>© 2026 OnlineFirst. All rights reserved. Built with Gemini AI & Local Storage.</span>
+          <span>Contact: onlinefirst2026@gmail.com · No tracking or ad cookies</span>
         </div>
       </footer>
 

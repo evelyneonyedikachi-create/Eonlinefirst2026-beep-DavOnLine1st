@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { 
   LayoutDashboard, 
   Flame, 
@@ -19,10 +19,17 @@ import {
   Clock,
   Code2,
   FileCheck,
-  Send
+  Send,
+  Download,
+  Upload,
+  RefreshCw,
+  Printer,
+  X,
+  AlertTriangle,
+  HardDrive
 } from "lucide-react";
 import { UserProgressState, CareerTrack } from "../types";
-import { calculateLevel, LEVEL_TIERS } from "../utils/storage";
+import { calculateLevel, LEVEL_TIERS, exportProgressJson, importProgressFromJson, resetLocalProgress } from "../utils/storage";
 import { BOOTCAMP_SPRINTS } from "../data/sprintsData";
 import { sound } from "../utils/soundEffects";
 
@@ -32,6 +39,7 @@ interface DashboardProps {
   onSaveNotes: (notes: Record<string, string>) => void;
   onSelectTab: (tab: string, sprintNum?: number) => void;
   onCheckIn?: () => void;
+  onUpdateProgress?: (newProgress: UserProgressState) => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -40,6 +48,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onSaveNotes,
   onSelectTab,
   onCheckIn,
+  onUpdateProgress,
 }) => {
   const [parentPledgeReward, setParentPledgeReward] = useState<string>(
     progress.notes["reward_contract"] || "Reward on Sprint 3 completion: New Mechanical Gaming Keyboard or $150 Tech Bounty"
@@ -48,6 +57,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
     progress.notes["study_notes"] || "Goal: Code my first live trading bot before school semester starts!"
   );
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
+  const [showShareModal, setShowShareModal] = useState<boolean>(false);
+  const [showResetModal, setShowResetModal] = useState<boolean>(false);
+  const [importFeedback, setImportFeedback] = useState<string | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const today = new Date().toISOString().split("T")[0];
   const hasCheckedInToday = progress.lastCheckInDate === today && progress.streakDays > 0;
@@ -78,6 +92,42 @@ export const Dashboard: React.FC<DashboardProps> = ({
     setSaveSuccess(true);
     sound.playXpGain();
     setTimeout(() => setSaveSuccess(false), 2500);
+  };
+
+  const handleExport = () => {
+    sound.playClick();
+    exportProgressJson(progress);
+  };
+
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const content = evt.target?.result as string;
+      const imported = importProgressFromJson(content);
+      if (imported) {
+        sound.playLevelUp();
+        setImportFeedback("Progress successfully imported!");
+        onUpdateProgress?.(imported);
+      } else {
+        setImportFeedback("Error: Invalid progress file format.");
+      }
+      setTimeout(() => setImportFeedback(null), 3500);
+    };
+    reader.readAsText(file);
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleConfirmReset = () => {
+    sound.playClick();
+    const clean = resetLocalProgress();
+    onUpdateProgress?.(clean);
+    setShowResetModal(false);
   };
 
   return (
@@ -118,133 +168,208 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {/* 2. Key Telemetry Metrics Grid (XP, Level, Streak, Committed Career) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total XP Card */}
-        <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-md space-y-2 shadow-lg">
+        <div className="p-5 rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/10 space-y-1.5 shadow-lg">
           <div className="flex items-center justify-between">
-            <span className="text-base font-mono text-slate-400 font-bold uppercase">Total XP</span>
-            <Sparkles className="w-5 h-5 text-amber-400" />
+            <span className="text-sm font-mono uppercase text-slate-300 font-semibold">Total XP Earned</span>
+            <Sparkles className="w-5 h-5 text-[#00f2ff]" />
           </div>
-          <div className="text-3xl font-black text-amber-400 font-mono">
-            {progress.xp} <span className="text-base text-slate-400 font-normal">XP</span>
+          <div className="text-3xl font-black text-white font-mono">{progress.xp.toLocaleString()}</div>
+          <div className="text-xs text-slate-400 font-mono">
+            {levelInfo.nextLevelXp - progress.xp} XP to next level
           </div>
-          <p className="text-base text-slate-400">
-            Next Level in: <strong className="text-white font-mono">{levelInfo.nextLevelXp - progress.xp} XP</strong>
-          </p>
         </div>
 
-        {/* Level & Rank */}
-        <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-md space-y-2 shadow-lg">
+        {/* Builder Level Card */}
+        <div className="p-5 rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/10 space-y-1.5 shadow-lg">
           <div className="flex items-center justify-between">
-            <span className="text-base font-mono text-slate-400 font-bold uppercase">Matrix Rank</span>
-            <Award className="w-5 h-5 text-[#00f2ff]" />
+            <span className="text-sm font-mono uppercase text-slate-300 font-semibold">Rank Tier</span>
+            <Award className="w-5 h-5 text-amber-400" />
           </div>
-          <div className="text-3xl font-black text-white flex items-center gap-2">
+          <div className="text-3xl font-black text-amber-400 font-mono flex items-center gap-2">
             <span>{levelInfo.badge}</span>
-            <span>Level {levelInfo.level}</span>
+            <span>Lvl {levelInfo.level}</span>
           </div>
-          <div className="w-full bg-black/60 h-2 rounded-full overflow-hidden border border-white/10">
-            <div
-              className="bg-[#00f2ff] h-full rounded-full transition-all"
-              style={{ width: `${levelInfo.progressPercent}%` }}
-            />
-          </div>
+          <div className="text-xs text-slate-400 font-mono truncate">{levelInfo.title.split(":")[1] || levelInfo.title}</div>
         </div>
 
-        {/* Consistency Streak */}
-        <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-md space-y-2 shadow-lg flex flex-col justify-between">
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-base font-mono text-slate-400 font-bold uppercase">Code Streak</span>
-              <Flame className="w-5 h-5 text-rose-400 animate-pulse" />
-            </div>
-            <div className="text-3xl font-black text-white font-mono">
-              {progress.streakDays} <span className="text-base text-slate-400 font-normal">Days Active</span>
-            </div>
-          </div>
-          {onCheckIn && (
-            <button
-              onClick={() => {
-                sound.playClick();
-                onCheckIn();
-              }}
-              disabled={hasCheckedInToday}
-              className={`w-full py-1.5 px-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                hasCheckedInToday
-                  ? "bg-white/[0.04] border border-amber-500/40 text-amber-300 cursor-default"
-                  : "bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-[#05070a] shadow-[0_0_12px_rgba(245,158,11,0.4)] font-bold animate-pulse"
-              }`}
-            >
-              <Flame className={`w-3.5 h-3.5 ${hasCheckedInToday ? "text-amber-400" : "text-[#05070a]"}`} />
-              <span>{hasCheckedInToday ? "Checked in today ✓" : "Claim Daily +50 XP"}</span>
-            </button>
-          )}
-        </div>
-
-        {/* Committed Career Goal */}
-        <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-md space-y-2 shadow-lg">
+        {/* Streak Days Card */}
+        <div className="p-5 rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/10 space-y-1.5 shadow-lg">
           <div className="flex items-center justify-between">
-            <span className="text-base font-mono text-slate-400 font-bold uppercase">Career Goal</span>
-            <Target className="w-5 h-5 text-emerald-400" />
+            <span className="text-sm font-mono uppercase text-slate-300 font-semibold">Coding Streak</span>
+            <Flame className="w-5 h-5 text-orange-400" />
           </div>
-          <div className="text-xl font-black text-emerald-400 truncate">
-            {committedCareer ? committedCareer.shortTitle : "Choose Track"}
+          <div className="text-3xl font-black text-orange-400 font-mono flex items-center gap-2">
+            <span>🔥</span>
+            <span>{progress.streakDays} Days</span>
           </div>
-          <button
-            onClick={() => onSelectTab("programs")}
-            className="text-base text-[#00f2ff] hover:underline font-bold"
-          >
-            {committedCareer ? "View Career Roadmap →" : "Select Your Career →"}
-          </button>
+          <div className="text-xs font-mono">
+            {hasCheckedInToday ? (
+              <span className="text-emerald-400">Checked in today ✓</span>
+            ) : (
+              <button
+                onClick={onCheckIn}
+                className="text-[#00f2ff] hover:underline font-bold cursor-pointer"
+              >
+                + Check In (+25 XP)
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Committed Career Track */}
+        <div className="p-5 rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/10 space-y-1.5 shadow-lg">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-mono uppercase text-slate-300 font-semibold">Committed Track</span>
+            <Target className="w-5 h-5 text-purple-400" />
+          </div>
+          <div className="text-lg font-black text-white truncate">
+            {committedCareer ? committedCareer.shortTitle : "Exploring All"}
+          </div>
+          <div className="text-xs font-mono text-purple-300">
+            {committedCareer ? committedCareer.salaryRange : "Choose in Careers tab"}
+          </div>
         </div>
       </div>
 
-      {/* 3. Section 12 Required: 5 Visual Sprint Cards Grid */}
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <div className="flex items-center gap-2 text-base font-mono text-[#00f2ff] font-bold uppercase tracking-wider mb-0.5">
-              <Layers className="w-4 h-4" />
-              <span>Your Complete Curriculum Progress</span>
+      {/* 3. LOCAL LEARNING PROGRESS STORAGE & BACKUP CONTROLS CARD */}
+      <div className="rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 p-6 md:p-8 space-y-6 shadow-2xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-[#00f2ff] font-mono text-base font-bold uppercase">
+              <HardDrive className="w-5 h-5 text-[#00f2ff]" />
+              <span>Where Is My Progress Saved?</span>
             </div>
-            <h3 className="text-2xl md:text-3xl font-black text-white">
-              Continue Your Journey
+            <h3 className="text-xl md:text-2xl font-black text-white">
+              Local Browser Storage & Data Portability
             </h3>
           </div>
 
-          <span className="text-base font-mono text-slate-300">
-            Overall Completion: <strong className="text-[#00f2ff] font-bold">{overallProgressPct}%</strong>
-          </span>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              onClick={handleExport}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-slate-200 hover:text-white border border-white/15 text-sm font-mono font-bold transition-all cursor-pointer"
+              title="Download local JSON backup"
+            >
+              <Download className="w-4 h-4 text-[#00f2ff]" />
+              <span>Export Progress</span>
+            </button>
+
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-slate-200 hover:text-white border border-white/15 text-sm font-mono font-bold transition-all cursor-pointer"
+              title="Upload JSON backup"
+            >
+              <Upload className="w-4 h-4 text-emerald-400" />
+              <span>Import Progress</span>
+            </button>
+
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImportFile}
+              accept=".json,application/json"
+              className="hidden"
+            />
+
+            <button
+              onClick={() => {
+                sound.playClick();
+                setShowShareModal(true);
+              }}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#00f2ff]/15 hover:bg-[#00f2ff]/25 text-[#00f2ff] border border-[#00f2ff]/30 text-sm font-mono font-bold transition-all cursor-pointer"
+              title="Print or share summary"
+            >
+              <Share2 className="w-4 h-4" />
+              <span>Share / Print Report</span>
+            </button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-1.5">
+            <span className="text-white font-bold text-sm block">1. No Account Required</span>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Your OnlineFirst learning progress is saved on this device in your browser. OnlineFirst does not maintain a central learner profile database for this progress.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-1.5">
+            <span className="text-amber-300 font-bold text-sm block">2. Device & Cache Notice</span>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Clearing your browser cache or switching to another device may reset your view unless you export your JSON progress file.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-2 flex flex-col justify-between">
+            <div>
+              <span className="text-slate-300 font-bold text-sm block">3. Reset Progress</span>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Permanently erase local records from this browser.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowResetModal(true)}
+              className="text-xs font-mono text-red-400 hover:text-red-300 hover:underline text-left cursor-pointer pt-1"
+            >
+              Reset My Local Progress →
+            </button>
+          </div>
+        </div>
+
+        {importFeedback && (
+          <div className="p-3.5 rounded-xl bg-[#00f2ff]/10 border border-[#00f2ff]/30 text-[#00f2ff] text-sm font-mono flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4" />
+            <span>{importFeedback}</span>
+          </div>
+        )}
+      </div>
+
+      {/* 4. Sprint Milestones Roadmap Grid (5 Sprints) */}
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="space-y-1">
+            <div className="text-base font-mono text-[#00f2ff] uppercase font-bold tracking-wider">
+              Curriculum Progression
+            </div>
+            <h3 className="text-2xl md:text-3xl font-black text-white">
+              The 5 AI Bootcamp Sprints
+            </h3>
+          </div>
+
+          <div className="text-base font-mono text-slate-300 bg-white/[0.04] px-4 py-2 rounded-xl border border-white/10">
+            Overall Completion: <strong className="text-[#00f2ff]">{overallProgressPct}%</strong> ({completedTotal}/{allMilestones.length} Milestones)
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {BOOTCAMP_SPRINTS.map((sprint) => {
+            const isDone = progress.completedSprints.includes(sprint.id);
             const sprintMilestoneDone = sprint.milestones.filter((m) =>
               progress.completedMilestones.includes(m.id)
             ).length;
-            const isFullySubmitted = progress.completedSprints.includes(sprint.id) || !!progress.submissions?.[sprint.id];
-            const isDone = isFullySubmitted || sprintMilestoneDone === sprint.milestones.length;
-            const isInProgress = !isDone && sprintMilestoneDone > 0;
             const pct = Math.round((sprintMilestoneDone / sprint.milestones.length) * 100);
+            const isInProgress = sprintMilestoneDone > 0 && !isDone;
 
             return (
               <div
                 key={sprint.id}
-                className={`p-6 rounded-3xl border backdrop-blur-xl transition-all duration-300 flex flex-col justify-between space-y-4 group relative overflow-hidden ${
+                className={`p-6 rounded-3xl bg-white/[0.03] backdrop-blur-xl border transition-all duration-300 flex flex-col justify-between space-y-6 group ${
                   isDone
-                    ? "bg-emerald-500/[0.04] border-emerald-500/30 hover:border-emerald-500/50"
+                    ? "border-emerald-500/40 bg-emerald-950/10"
                     : isInProgress
-                    ? "bg-white/[0.04] border-[#00f2ff]/40 shadow-[0_0_20px_rgba(0,242,255,0.15)]"
-                    : "bg-white/[0.02] border-white/10 hover:border-white/20 hover:bg-white/[0.04]"
+                    ? "border-[#00f2ff]/40 shadow-[0_0_20px_rgba(0,242,255,0.15)]"
+                    : "border-white/10 hover:border-white/20"
                 }`}
               >
-                <div className="space-y-3">
-                  {/* Top Bar: Sprint # & Status Badge */}
+                <div className="space-y-4">
+                  {/* Top Status & Badge */}
                   <div className="flex items-center justify-between">
-                    <span className="px-3 py-1 rounded-xl bg-white/[0.06] border border-white/10 font-mono text-base font-bold text-[#00f2ff]">
-                      Sprint {sprint.sprintNumber}
+                    <span className="px-3 py-1 rounded-xl bg-white/[0.05] border border-white/10 font-mono text-base font-bold text-[#00f2ff]">
+                      SPRINT 0{sprint.sprintNumber}
                     </span>
 
                     {isDone ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-base font-mono font-bold">
+                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-base font-mono font-bold">
                         <CheckCircle2 className="w-4 h-4" />
                         <span>Completed</span>
                       </span>
@@ -280,7 +405,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     {sprint.skillsList.slice(0, 3).map((skill, idx) => (
                       <span
                         key={idx}
-                        className="px-2.5 py-0.5 rounded-lg bg-black/40 border border-white/10 text-slate-300 font-mono text-base"
+                        className="px-2.5 py-0.5 rounded-lg bg-black/40 border border-white/10 text-slate-300 font-mono text-xs"
                       >
                         {skill}
                       </span>
@@ -289,17 +414,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                   {/* Main Deliverable Snippet */}
                   <div className="p-3 rounded-xl bg-black/50 border border-white/10 space-y-1">
-                    <span className="text-base font-mono text-slate-400 block font-bold uppercase">
+                    <span className="text-xs font-mono text-slate-400 block font-bold uppercase">
                       Deliverable:
                     </span>
-                    <p className="text-base text-slate-200 font-medium line-clamp-2">
+                    <p className="text-sm text-slate-200 font-medium line-clamp-2">
                       {sprint.project.deliverable}
                     </p>
                   </div>
 
                   {/* Progress Bar */}
                   <div className="space-y-1 pt-1">
-                    <div className="flex justify-between text-base font-mono">
+                    <div className="flex justify-between text-xs font-mono">
                       <span className="text-slate-400">Milestones Done:</span>
                       <span className="text-[#00f2ff] font-bold">{sprintMilestoneDone}/{sprint.milestones.length} ({pct}%)</span>
                     </div>
@@ -333,7 +458,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
       </div>
 
-      {/* 4. Parent / Mentor Pledge Contract Section */}
+      {/* 5. Parent / Mentor Pledge Contract Section */}
       <div className="rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 p-6 md:p-8 space-y-6 shadow-2xl">
         <div className="flex items-center gap-2 text-base font-mono text-[#00f2ff] font-bold uppercase tracking-wider mb-1">
           <ShieldCheck className="w-5 h-5 text-[#00f2ff]" />
@@ -350,7 +475,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="space-y-2">
-            <label className="block text-base font-bold text-white">
+            <label className="text-base font-bold text-white block">
               Agreed Milestone Reward / Bounty:
             </label>
             <input
@@ -362,7 +487,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
 
           <div className="space-y-2">
-            <label className="block text-base font-bold text-white">
+            <label className="text-base font-bold text-white block">
               Personal Ambition & Target Completion Date:
             </label>
             <input
@@ -381,7 +506,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               Pledge Contract Saved to Matrix!
             </span>
           ) : (
-            <span className="text-base text-slate-400 font-mono">
+            <span className="text-sm text-slate-400 font-mono">
               Auto-saved locally in your browser storage
             </span>
           )}
@@ -395,6 +520,110 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </button>
         </div>
       </div>
+
+      {/* SHARE / PRINT PROGRESS REPORT MODAL */}
+      {showShareModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-in fade-in duration-200">
+          <div className="relative w-full max-w-2xl bg-[#080d14] border border-white/20 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setShowShareModal(false)}
+              className="absolute top-5 right-5 p-2 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-slate-300 cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#00f2ff]/20 text-[#00f2ff] flex items-center justify-center font-bold">
+                ⚡
+              </div>
+              <div>
+                <h3 className="text-2xl font-black text-white">OnlineFirst Learner Report</h3>
+                <p className="text-xs font-mono text-slate-400">Generated: {new Date().toLocaleDateString()}</p>
+              </div>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-black/60 border border-white/10 space-y-4 text-slate-200">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                <div className="p-3 rounded-xl bg-white/[0.04] border border-white/5">
+                  <span className="text-xs text-slate-400 uppercase font-mono block">Level</span>
+                  <span className="text-xl font-bold text-amber-400 font-mono">Lvl {levelInfo.level}</span>
+                </div>
+                <div className="p-3 rounded-xl bg-white/[0.04] border border-white/5">
+                  <span className="text-xs text-slate-400 uppercase font-mono block">XP</span>
+                  <span className="text-xl font-bold text-[#00f2ff] font-mono">{progress.xp}</span>
+                </div>
+                <div className="p-3 rounded-xl bg-white/[0.04] border border-white/5">
+                  <span className="text-xs text-slate-400 uppercase font-mono block">Streak</span>
+                  <span className="text-xl font-bold text-orange-400 font-mono">{progress.streakDays}d</span>
+                </div>
+                <div className="p-3 rounded-xl bg-white/[0.04] border border-white/5">
+                  <span className="text-xs text-slate-400 uppercase font-mono block">Milestones</span>
+                  <span className="text-xl font-bold text-emerald-400 font-mono">{completedTotal}/{allMilestones.length}</span>
+                </div>
+              </div>
+
+              <div className="space-y-1 border-t border-white/10 pt-3">
+                <span className="text-xs text-slate-400 font-mono uppercase block">Specialization Track:</span>
+                <span className="text-white font-bold text-base">{committedCareer ? committedCareer.title : "General AI & Python Exploration"}</span>
+              </div>
+
+              <div className="space-y-1">
+                <span className="text-xs text-slate-400 font-mono uppercase block">Pledge Bounty Deal:</span>
+                <p className="text-sm text-slate-300 italic">"{parentPledgeReward}"</p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-2">
+              <button
+                onClick={handleExport}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white text-sm font-mono cursor-pointer border border-white/10"
+              >
+                <Download className="w-4 h-4" />
+                <span>Save JSON Backup</span>
+              </button>
+
+              <button
+                onClick={() => window.print()}
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#00f2ff] hover:bg-[#38f6ff] text-[#05070a] font-bold text-sm font-mono uppercase tracking-wide cursor-pointer shadow-[0_0_15px_rgba(0,242,255,0.3)]"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Print / Save PDF</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* RESET CONFIRMATION MODAL */}
+      {showResetModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-[#080d14] border border-red-500/40 rounded-3xl p-6 space-y-5 shadow-2xl text-slate-200">
+            <div className="flex items-center gap-3 text-red-400 font-bold text-lg">
+              <AlertTriangle className="w-6 h-6" />
+              <span>Reset Local Progress?</span>
+            </div>
+
+            <p className="text-sm text-slate-300 leading-relaxed">
+              This will permanently remove your OnlineFirst learning progress (XP, streak, milestones, and notes) stored in this browser. This cannot be undone unless you have exported a JSON backup.
+            </p>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                onClick={() => setShowResetModal(false)}
+                className="px-4 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white text-sm font-mono cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmReset}
+                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-sm font-mono cursor-pointer"
+              >
+                Yes, Reset Everything
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

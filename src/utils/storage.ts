@@ -72,3 +72,101 @@ export function calculateLevel(xp: number): { level: number; title: string; badg
     progressPercent,
   };
 }
+
+/**
+ * Downloads a small non-identifying JSON backup file of the learner's browser progress.
+ */
+export function exportProgressJson(progress: UserProgressState): void {
+  try {
+    const exportData = {
+      app: "OnlineFirst AI Studio",
+      version: "1.0",
+      exportDate: new Date().toISOString(),
+      progressData: {
+        xp: progress.xp,
+        level: progress.level,
+        streakDays: progress.streakDays,
+        committedCareerId: progress.committedCareerId,
+        targetAge: progress.targetAge,
+        completedMilestones: progress.completedMilestones,
+        completedTimelineSteps: progress.completedTimelineSteps,
+        completedSprints: progress.completedSprints,
+        submissions: progress.submissions,
+        unlockedBadges: progress.unlockedBadges,
+        notes: progress.notes,
+      },
+    };
+
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
+    const downloadAnchor = document.createElement("a");
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `onlinefirst-progress-${new Date().toISOString().split("T")[0]}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  } catch (err) {
+    console.error("Failed to export progress:", err);
+  }
+}
+
+/**
+ * Parses and validates an uploaded JSON progress file.
+ */
+export function importProgressFromJson(jsonString: string): UserProgressState | null {
+  try {
+    const parsed = JSON.parse(jsonString);
+    const data = parsed.progressData || parsed;
+
+    if (typeof data.xp !== "number") {
+      throw new Error("Invalid progress format: missing numeric XP");
+    }
+
+    const importedState: UserProgressState = {
+      xp: Number(data.xp) || 0,
+      level: Number(data.level) || calculateLevel(Number(data.xp) || 0).level,
+      streakDays: Number(data.streakDays) || 1,
+      lastCheckInDate: new Date().toISOString().split("T")[0],
+      committedCareerId: data.committedCareerId || null,
+      commitmentDate: data.commitmentDate || null,
+      targetAge: Number(data.targetAge) || 19,
+      completedMilestones: Array.isArray(data.completedMilestones) ? data.completedMilestones : [],
+      completedTimelineSteps: typeof data.completedTimelineSteps === "object" && data.completedTimelineSteps !== null ? data.completedTimelineSteps : {},
+      completedSprints: Array.isArray(data.completedSprints) ? data.completedSprints : [],
+      submissions: typeof data.submissions === "object" && data.submissions !== null ? data.submissions : {},
+      unlockedBadges: Array.isArray(data.unlockedBadges) ? data.unlockedBadges : ["initiate"],
+      notes: typeof data.notes === "object" && data.notes !== null ? data.notes : {},
+      soundEnabled: true,
+    };
+
+    saveStoredProgress(importedState);
+    return importedState;
+  } catch (err) {
+    console.error("Failed to import progress:", err);
+    return null;
+  }
+}
+
+/**
+ * Resets local browser storage to clean initial state.
+ */
+export function resetLocalProgress(): UserProgressState {
+  const cleanState: UserProgressState = {
+    xp: 0,
+    level: 1,
+    streakDays: 0,
+    lastCheckInDate: "",
+    committedCareerId: null,
+    commitmentDate: null,
+    targetAge: 18,
+    completedMilestones: [],
+    completedTimelineSteps: {},
+    completedSprints: [],
+    submissions: {},
+    unlockedBadges: [],
+    notes: {},
+    soundEnabled: true,
+  };
+
+  saveStoredProgress(cleanState);
+  return cleanState;
+}

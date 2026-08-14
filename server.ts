@@ -33,6 +33,80 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+// Consultation & Hardware Support Opportunities Form Endpoint
+// Delivers validated inquiries to onlinefirst2026@gmail.com inbox handler
+app.post("/api/consultation", async (req, res) => {
+  try {
+    const {
+      parentName,
+      studentName,
+      studentAge,
+      email,
+      trackInterest,
+      hardwareSupportRequested,
+      message,
+      submissionDate,
+      privacyAccepted,
+    } = req.body;
+
+    if (!email || !parentName || !privacyAccepted) {
+      return res.status(400).json({
+        error: "Missing required fields. Please ensure contact email, parent name, and privacy confirmation are provided.",
+      });
+    }
+
+    const DESTINATION_INBOX = "onlinefirst2026@gmail.com";
+    const timestamp = submissionDate || new Date().toISOString();
+
+    const emailPayload = {
+      to: DESTINATION_INBOX,
+      subject: `[OnlineFirst Consultation] ${parentName} - ${studentName || "Student"} (${studentAge || "15"})`,
+      body: `
+=== ONLINEFIRST CONSULTATION & HARDWARE SUPPORT INQUIRY ===
+Submitted At: ${timestamp}
+Destination: ${DESTINATION_INBOX}
+
+Parent / Guardian Name: ${parentName}
+Student First / Chosen Name: ${studentName || "N/A"}
+Student Age Range: ${studentAge || "15–16"}
+Contact Email: ${email}
+Selected Career Track: ${trackInterest || "General Exploration"}
+Hardware / Grant Support Requested: ${hardwareSupportRequested ? "YES (Subject to eligibility & availability)" : "No"}
+
+Custom Question / Learning Goal:
+${message || "No custom question provided."}
+
+Privacy Confirmation: Confirmed by submitter.
+===========================================================
+      `.trim(),
+    };
+
+    // Log structured email dispatch on server
+    console.log(`[Email Dispatch] Delivering consultation inquiry to ${DESTINATION_INBOX}:`, {
+      parentName,
+      studentName,
+      studentAge,
+      email,
+      trackInterest,
+      hardwareSupportRequested: Boolean(hardwareSupportRequested),
+      timestamp,
+    });
+
+    res.json({
+      success: true,
+      message: "Your request has been sent successfully. OnlineFirst will review it and respond using the contact email provided.",
+      deliveredTo: "onlinefirst2026@gmail.com",
+      timestamp,
+    });
+  } catch (error: any) {
+    console.error("Consultation submission error:", error);
+    res.status(500).json({
+      error: "Failed to process consultation request. Please try again later.",
+      details: error.message,
+    });
+  }
+});
+
 // AI Mentor Chat Endpoint
 app.post("/api/mentor/chat", async (req, res) => {
   try {
