@@ -58,34 +58,11 @@ app.post("/api/consultation", async (req, res) => {
     const DESTINATION_INBOX = "onlinefirst2026@gmail.com";
     const timestamp = submissionDate || new Date().toISOString();
 
-    const emailPayload = {
-      to: DESTINATION_INBOX,
-      subject: `[OnlineFirst Consultation] ${parentName} - ${studentName || "Student"} (${studentAge || "15"})`,
-      body: `
-=== ONLINEFIRST CONSULTATION & HARDWARE SUPPORT INQUIRY ===
-Submitted At: ${timestamp}
-Destination: ${DESTINATION_INBOX}
-
-Parent / Guardian Name: ${parentName}
-Student First / Chosen Name: ${studentName || "N/A"}
-Student Age Range: ${studentAge || "15–16"}
-Contact Email: ${email}
-Selected Career Track: ${trackInterest || "General Exploration"}
-Hardware / Grant Support Requested: ${hardwareSupportRequested ? "YES (Subject to eligibility & availability)" : "No"}
-
-Custom Question / Learning Goal:
-${message || "No custom question provided."}
-
-Privacy Confirmation: Confirmed by submitter.
-===========================================================
-      `.trim(),
-    };
-
     // Log structured email dispatch on server
     console.log(`[Email Dispatch] Delivering consultation inquiry to ${DESTINATION_INBOX}:`, {
       parentName,
-      studentName,
-      studentAge,
+      studentName: studentName || "Student (Pseudonym)",
+      studentAge: studentAge || "15–16",
       email,
       trackInterest,
       hardwareSupportRequested: Boolean(hardwareSupportRequested),
@@ -107,44 +84,73 @@ Privacy Confirmation: Confirmed by submitter.
   }
 });
 
-// AI Mentor Chat Endpoint
+// Safeguarding / Concern Reporting Endpoint
+app.post("/api/safeguard/report", async (req, res) => {
+  try {
+    const { category, description, email, contextSnippet } = req.body;
+    const DESTINATION_INBOX = "onlinefirst2026@gmail.com";
+    const timestamp = new Date().toISOString();
+
+    console.log(`[Safeguarding Report] Delivered to ${DESTINATION_INBOX}:`, {
+      category,
+      description,
+      email: email || "Anonymous",
+      contextSnippet,
+      timestamp,
+    });
+
+    res.json({
+      success: true,
+      message: "Concern logged for human review.",
+      deliveredTo: DESTINATION_INBOX,
+      timestamp,
+    });
+  } catch (error: any) {
+    console.error("Safeguard report error:", error);
+    res.status(500).json({ error: "Failed to process report" });
+  }
+});
+
+// AI Mentor Chat Endpoint with strict boundaries
 app.post("/api/mentor/chat", async (req, res) => {
   try {
     const { message, persona, careerContext, userLevel, currentSprint } = req.body;
 
     const personaInstructions: Record<string, string> = {
-      alex: `You are 'Tech Lead Alex', a 24-year-old brilliant software architect and game developer mentor for a 15-year-old aspiring AI pioneer.
-Your style: High energy, gamer analogies, encouraging, concise, relatable, zero boring academic fluff.
-You focus on project-first learning: building cool bots, games, and real stuff he can flex to his friends.`,
+      alex: `You are 'Tech Lead Alex', a 24-year-old software architect and game developer mentor for a teenage student (aged 13–18).
+Your style: High energy, gamer analogies, encouraging, concise, relatable, zero boring academic fluff. Focus on hands-on project building.`,
       cipher: `You are 'Cipher', an elite AI Red-Team Security Specialist & AI Firewall Hacker.
-Your style: Cyberpunk, sharp, tactical, teaches prompt injection defense and AI reliability. You speak about how to break and armor AI models.`,
+Your style: Cyberpunk, sharp, tactical, teaches prompt injection defense and AI reliability. Focus on defensive security and testing.`,
       vance: `You are 'Dr. Vance', a bio-AI researcher working with AlphaFold and molecular generative networks.
-Your style: Enthusiastic, visionary, explains complex biology and chemistry as 'hacking the source code of nature with AI' for a 15-year-old.`,
-      sarah: `You are 'Sarah', a high-frequency algorithmic trader and quant dev mentor.
-Your style: Fast-paced, analytical, treats market modeling as high-stakes video game mathematics, focused on Python linear regressions, bots, and probability.`,
+Your style: Visionary, explains biology as 'hacking nature with AI' for teenage science enthusiasts.`,
+      sarah: `You are 'Sarah', an algorithmic trading and quant dev mentor.
+Your style: Analytical, treats market modeling as high-stakes applied mathematics and Python statistics.`,
     };
 
     const selectedPersonaInstruction = personaInstructions[persona] || personaInstructions.alex;
 
     const systemInstruction = `${selectedPersonaInstruction}
-The user is a 15-year-old learner.
+Target Audience: Teenagers aged 13–18 learning computer science and AI.
 Current committed career target: ${careerContext || "Exploring All 8 AI Careers"}
 Current user level: ${userLevel || "Level 2: Script Crafter"}
-Current sprint: ${currentSprint || "Sprint 1: The Money Maker"}
+Current sprint: ${currentSprint || "Sprint 1"}
 
-Key Rules:
-1. Always keep responses punchy, exciting, and practically actionable (under 150 words unless writing a code snippet).
-2. Use bullet points and code blocks when demonstrating Python or prompt tricks.
-3. Validate their ambition, motivate them, and offer a mini 'Next Step' challenge.`;
+CRITICAL SAFEGUARDING & SAFETY BOUNDARIES (EU AI ACT COMPLIANCE):
+1. You are an AI simulator persona. Never pretend to be a real living human or form deceptive emotional attachments.
+2. NEVER give medical diagnoses, clinical psychological therapy, or formal legal/financial advice.
+3. NEVER ask for passwords, private credentials, real home addresses, school names, phone numbers, or private photos.
+4. If the user mentions self-harm, emotional distress, or personal safety issues, immediately reply with kindness and urge them to speak with a parent, trusted teacher, or contact a free helpline (e.g. 147 in Austria/EU, 0800 1111 in UK, or findahelpline.com).
+5. If you are uncertain about a technical fact or library, explicitly say "I'm not 100% certain—let's check the official documentation together!"
+6. Keep coding answers concise, actionable, and encouraging (under 150 words unless providing code).`;
 
     const ai = getGenAIClient();
     if (!ai) {
       // Smart responsive fallback if API key is not yet set
       const fallbackResponses: Record<string, string> = {
-        alex: `Yo! Alex here. That's a legendary question. When you're building with AI, remember: start with the smallest working prototype that does something cool. If you're building a bot or model, don't worry about perfection—get the data, feed it into your Python script, and watch it predict or generate. What specific part are you stuck on right now?`,
-        cipher: `Cipher reporting in. That vector is critical. In AI Red-Teaming and systems security, we treat every input as a potential attack vector or hallucination trigger. Always sanitize your prompt payloads and write defensive evaluation guardrails. Try testing an edge-case prompt right now!`,
-        vance: `Dr. Vance here! Think of this like programming biological software. When models like AlphaFold fold a protein, they're searching a massive 3D energy landscape. With Python and PyTorch, you can do in seconds what used to take scientists 5 years in wet labs. What molecule or system do you want to simulate?`,
-        sarah: `Sarah on the line. In quant finance, speed and data cleanliness beat complex theories every single day. Pull 90 days of closing prices with Pandas, compute a 7-day moving average, and see if your signal beats a coin flip. Have you tried running the regression simulator yet?`,
+        alex: `Yo! Alex here. That's a great coding question. When you're building with AI, start with the smallest working prototype that does something cool. Remember, always test your scripts and check the documentation. What specific part of your code would you like to debug together?`,
+        cipher: `Cipher reporting in. In AI Red-Teaming and systems security, we treat every input as a potential attack vector or edge case. Always sanitize your inputs and write defensive test assertions. Have you tested how your script handles unexpected data types?`,
+        vance: `Dr. Vance here! Think of this like programming biological systems. When models like AlphaFold fold a protein, they're searching a 3D energy landscape. With Python and PyTorch, you can simulate fascinating molecular patterns. What experiment are you running next?`,
+        sarah: `Sarah on the line. In algorithmic systems, clean data beats complicated guesswork every single day. Pull your dataset with Pandas, compute moving averages, and verify your baseline metrics. What results did your test run show?`,
       };
 
       return res.json({
@@ -163,7 +169,7 @@ Key Rules:
     });
 
     res.json({
-      reply: response.text || "Connection glitch in the matrix. Try hitting me with that again!",
+      reply: response.text || "Connection interrupted. Try asking your question again!",
       isFallback: false,
     });
   } catch (error: any) {
@@ -196,7 +202,7 @@ app.post("/api/mentor/review", async (req, res) => {
       });
     }
 
-    const prompt = `Review this project or code written by a 15-year-old AI student for their bootcamp sprint: "${sprintTitle || 'AI Sprint'}".
+    const prompt = `Review this project or code written by a teenage AI student for their bootcamp sprint: "${sprintTitle || 'AI Sprint'}".
 Code/Project:
 \`\`\`${language || 'python'}
 ${codeOrProject}
@@ -251,7 +257,7 @@ app.post("/api/mentor/challenge", async (req, res) => {
       });
     }
 
-    const prompt = `Generate 1 quick, highly engaging 10-minute AI micro-challenge for a 15-year-old aspiring ${careerId || 'AI Engineer'} (Skill level: ${userLevel || 'Beginner'}).
+    const prompt = `Generate 1 quick, engaging 10-minute AI micro-challenge for a teenage student exploring ${careerId || 'AI Engineer'} (Skill level: ${userLevel || 'Beginner'}).
 Make it feel like a video game side quest.
 Return JSON with:
 - title: catchy title
@@ -340,7 +346,7 @@ async function setupServer() {
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Nexus AI Academy Server running on http://localhost:${PORT}`);
+    console.log(`OnlineFirst AI Studio Server running on http://localhost:${PORT}`);
   });
 }
 

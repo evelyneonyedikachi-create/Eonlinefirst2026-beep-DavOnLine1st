@@ -92,71 +92,44 @@ export const SprintPracticeLab: React.FC<SprintPracticeLabProps> = ({
 
   return (
     <div
-      id="practice-lab-section"
-      className={`rounded-3xl bg-[#0b101c] border border-[#00f2ff]/30 p-6 md:p-8 space-y-6 shadow-2xl transition-all ${
-        isFullScreen ? "fixed inset-4 z-50 overflow-y-auto bg-[#070b14] border-[#00f2ff]" : "relative"
+      className={`space-y-4 transition-all ${
+        isFullScreen ? "fixed inset-4 z-50 overflow-y-auto bg-[#070b14] border border-[#00f2ff] p-6 rounded-3xl" : "relative"
       }`}
     >
-      {/* Required Header & Safe Haven Explanation */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+      {/* Header Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-md">
         <div>
-          <div className="flex items-center gap-2 text-base font-mono text-[#00f2ff] font-bold uppercase tracking-wider mb-1">
-            <FlaskConical className="w-5 h-5 text-[#00f2ff]" />
-            <span>Interactive Simulator</span>
+          <div className="flex items-center gap-2 text-xs font-mono text-[#00f2ff] font-bold uppercase tracking-wider">
+            <FlaskConical className="w-4 h-4 text-[#00f2ff]" />
+            <span>Interactive Practice Lab & Live Simulator</span>
           </div>
-          <h3 className="text-2xl md:text-3xl font-black text-white">
-            Your Practice Lab
-          </h3>
-          <p className="text-base text-slate-300 mt-1 max-w-3xl">
-            This is your safe place to experiment. You cannot break anything. Change the code, run it, see what happens, and try again.
+          <p className="text-sm text-slate-300 font-medium mt-0.5">
+            Safe sandbox: you cannot break anything. Change parameters, execute code, and inspect outputs.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-start md:self-auto">
+        <div className="flex items-center gap-2 self-start sm:self-auto">
           <button
             onClick={() => setIsFullScreen(!isFullScreen)}
-            className="p-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-slate-300 hover:text-white transition-all cursor-pointer"
+            className="p-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-slate-300 hover:text-white transition-all cursor-pointer text-xs flex items-center gap-1.5"
             title={isFullScreen ? "Exit Fullscreen" : "Fullscreen Lab"}
           >
-            {isFullScreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+            {isFullScreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4 text-[#00f2ff]" />}
+            <span className="font-mono text-xs">{isFullScreen ? "Exit Fullscreen" : "Fullscreen"}</span>
           </button>
-        </div>
-      </div>
-
-      {/* Required How to Use the Lab 5-Step Instruction Bar */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 p-4 rounded-2xl bg-white/[0.02] border border-white/10 text-base">
-        <div className="p-3 rounded-xl bg-black/40 border border-white/5 space-y-0.5">
-          <span className="text-[#00f2ff] font-mono font-bold text-base">1. READ</span>
-          <p className="text-slate-300 text-base leading-snug">Look at the example.</p>
-        </div>
-        <div className="p-3 rounded-xl bg-black/40 border border-white/5 space-y-0.5">
-          <span className="text-purple-400 font-mono font-bold text-base">2. CHANGE</span>
-          <p className="text-slate-300 text-base leading-snug">Edit the highlighted part.</p>
-        </div>
-        <div className="p-3 rounded-xl bg-black/40 border border-white/5 space-y-0.5">
-          <span className="text-emerald-400 font-mono font-bold text-base">3. RUN</span>
-          <p className="text-slate-300 text-base leading-snug">Click Run Code.</p>
-        </div>
-        <div className="p-3 rounded-xl bg-black/40 border border-white/5 space-y-0.5">
-          <span className="text-amber-400 font-mono font-bold text-base">4. OBSERVE</span>
-          <p className="text-slate-300 text-base leading-snug">See what changed.</p>
-        </div>
-        <div className="p-3 rounded-xl bg-black/40 border border-white/5 space-y-0.5">
-          <span className="text-cyan-300 font-mono font-bold text-base">5. EXPERIMENT</span>
-          <p className="text-slate-300 text-base leading-snug">Try your own version.</p>
         </div>
       </div>
 
       {/* Lab Challenges Strip */}
       {labData.challenges && labData.challenges.length > 0 && (
-        <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3">
+        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2.5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div className="flex items-center gap-2 text-base font-mono text-amber-300 font-bold uppercase">
-              <Sparkles className="w-4 h-4" />
-              <span>Lab Challenge {activeChallenge.step} of {labData.challenges.length}</span>
+            <div className="flex items-center gap-1.5 text-xs font-mono text-amber-300 font-bold uppercase">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Lab Mission {activeChallenge.step} of {labData.challenges.length}</span>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               {labData.challenges.map((c) => (
                 <button
                   key={c.step}
@@ -165,7 +138,7 @@ export const SprintPracticeLab: React.FC<SprintPracticeLabProps> = ({
                     setActiveChallengeIndex(c.step - 1);
                     setHintLevel(0);
                   }}
-                  className={`px-3 py-1 rounded-lg text-base font-mono font-bold transition-all cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer ${
                     activeChallengeIndex === c.step - 1
                       ? "bg-[#00f2ff] text-[#05070a]"
                       : completedChallenges.includes(c.step)
@@ -179,7 +152,7 @@ export const SprintPracticeLab: React.FC<SprintPracticeLabProps> = ({
             </div>
           </div>
 
-          <div className="text-lg font-bold text-white">
+          <div className="text-sm font-bold text-white">
             {activeChallenge.task}
           </div>
 
@@ -190,9 +163,9 @@ export const SprintPracticeLab: React.FC<SprintPracticeLabProps> = ({
                 sound.playClick();
                 setHintLevel(hintLevel >= 1 ? 0 : 1);
               }}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-base text-slate-300 border border-white/10 transition-all cursor-pointer font-medium"
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-xs text-slate-300 border border-white/10 transition-all cursor-pointer font-medium"
             >
-              <HelpCircle className="w-4 h-4 text-amber-400" />
+              <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
               <span>{hintLevel >= 1 ? "Hide Hint 1" : "Need Hint 1?"}</span>
             </button>
 
@@ -202,9 +175,9 @@ export const SprintPracticeLab: React.FC<SprintPracticeLabProps> = ({
                   sound.playClick();
                   setHintLevel(hintLevel >= 2 ? 1 : 2);
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-base text-amber-300 border border-amber-500/30 transition-all cursor-pointer font-medium"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-xs text-amber-300 border border-amber-500/30 transition-all cursor-pointer font-medium"
               >
-                <HelpCircle className="w-4 h-4" />
+                <HelpCircle className="w-3.5 h-3.5" />
                 <span>{hintLevel >= 2 ? "Hide Hint 2" : "Need Hint 2?"}</span>
               </button>
             )}
@@ -215,7 +188,7 @@ export const SprintPracticeLab: React.FC<SprintPracticeLabProps> = ({
                   sound.playClick();
                   setCode(code.replace(activeChallenge.targetLine, activeChallenge.solutionCode));
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#00f2ff]/15 hover:bg-[#00f2ff]/25 text-base text-[#00f2ff] border border-[#00f2ff]/30 transition-all cursor-pointer font-bold"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#00f2ff]/15 hover:bg-[#00f2ff]/25 text-xs text-[#00f2ff] border border-[#00f2ff]/30 transition-all cursor-pointer font-bold"
               >
                 <span>Apply Solution Example</span>
               </button>
@@ -223,13 +196,13 @@ export const SprintPracticeLab: React.FC<SprintPracticeLabProps> = ({
           </div>
 
           {hintLevel >= 1 && (
-            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-base text-amber-200">
+            <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200">
               <strong>Hint 1:</strong> {activeChallenge.hint1}
             </div>
           )}
 
           {hintLevel >= 2 && (
-            <div className="p-3 rounded-xl bg-amber-500/15 border border-amber-500/40 text-base text-amber-100">
+            <div className="p-2.5 rounded-xl bg-amber-500/15 border border-amber-500/40 text-xs text-amber-100">
               <strong>Hint 2:</strong> {activeChallenge.hint2}
             </div>
           )}
@@ -237,31 +210,31 @@ export const SprintPracticeLab: React.FC<SprintPracticeLabProps> = ({
       )}
 
       {/* 2-Panel Lab: Left = Code Editor, Right = Console Output */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Code Editor Panel */}
         <div className="rounded-2xl bg-black/80 border border-slate-800 overflow-hidden flex flex-col shadow-inner">
-          <div className="bg-slate-900/90 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between">
+          <div className="bg-slate-900/90 px-3.5 py-2 border-b border-slate-800 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Code2 className="w-4 h-4 text-[#00f2ff]" />
-              <span className="text-base font-mono text-slate-300 font-bold">
-                interactive_script.{labData.language === "python" ? "py" : "js"}
+              <Code2 className="w-3.5 h-3.5 text-[#00f2ff]" />
+              <span className="text-xs font-mono text-slate-300 font-bold">
+                sandbox_script.{labData.language === "python" ? "py" : "js"}
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <button
                 onClick={handleCopy}
-                className="p-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-slate-400 hover:text-white transition-all cursor-pointer"
+                className="p-1 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-slate-400 hover:text-white transition-all cursor-pointer"
                 title="Copy code"
               >
-                {isCopied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
               </button>
               <button
                 onClick={handleReset}
-                className="p-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-slate-400 hover:text-white transition-all cursor-pointer"
+                className="p-1 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-slate-400 hover:text-white transition-all cursor-pointer"
                 title="Reset code"
               >
-                <RotateCcw className="w-4 h-4" />
+                <RotateCcw className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
@@ -270,41 +243,41 @@ export const SprintPracticeLab: React.FC<SprintPracticeLabProps> = ({
             value={code}
             onChange={(e) => setCode(e.target.value)}
             spellCheck={false}
-            className="w-full h-80 lg:h-96 p-4 bg-transparent font-mono text-base text-[#00f2ff] focus:outline-none resize-none leading-relaxed selection:bg-[#00f2ff]/30"
+            className="w-full h-64 lg:h-72 p-3.5 bg-transparent font-mono text-xs text-[#00f2ff] focus:outline-none resize-none leading-relaxed selection:bg-[#00f2ff]/30"
           />
 
-          <div className="p-3 bg-slate-900/70 border-t border-slate-800 flex items-center justify-between">
-            <span className="text-base font-mono text-slate-400">
-              Safe Mode Active // No errors can harm your device
+          <div className="p-2.5 bg-slate-900/70 border-t border-slate-800 flex items-center justify-between">
+            <span className="text-[11px] font-mono text-slate-400">
+              Safe Sandboxed Runtime
             </span>
 
             <button
               onClick={handleRunCode}
               disabled={isRunning}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#00f2ff] hover:bg-[#33f5ff] text-[#05070a] font-black text-base transition-all cursor-pointer shadow-[0_0_20px_rgba(0,242,255,0.4)] disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#00f2ff] hover:bg-[#33f5ff] text-[#05070a] font-black text-xs transition-all cursor-pointer shadow-[0_0_15px_rgba(0,242,255,0.3)] disabled:opacity-50"
             >
-              <Play className="w-4 h-4 fill-current" />
-              <span>{isRunning ? "Running..." : "Run Code"}</span>
+              <Play className="w-3.5 h-3.5 fill-current" />
+              <span>{isRunning ? "Executing..." : "Run Code"}</span>
             </button>
           </div>
         </div>
 
         {/* Live Output & Sandbox Simulator Panel */}
         <div className="rounded-2xl bg-black/80 border border-slate-800 overflow-hidden flex flex-col shadow-inner">
-          <div className="bg-slate-900/90 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between">
+          <div className="bg-slate-900/90 px-3.5 py-2 border-b border-slate-800 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Terminal className="w-4 h-4 text-emerald-400" />
-              <span className="text-base font-mono text-slate-300 font-bold">
+              <Terminal className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-xs font-mono text-slate-300 font-bold">
                 Console Output & Visual Telemetry
               </span>
             </div>
-            <span className="text-base font-mono text-emerald-400 flex items-center gap-1.5 font-bold">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              LIVE
+            <span className="text-[11px] font-mono text-emerald-400 flex items-center gap-1 font-bold">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              READY
             </span>
           </div>
 
-          <div className="p-4 bg-black/90 font-mono text-base text-slate-300 flex-1 overflow-y-auto space-y-1.5 h-80 lg:h-96">
+          <div className="p-3.5 bg-black/90 font-mono text-xs text-slate-300 flex-1 overflow-y-auto space-y-1 h-64 lg:h-72">
             {outputLogs.map((log, idx) => (
               <div
                 key={idx}
@@ -323,17 +296,17 @@ export const SprintPracticeLab: React.FC<SprintPracticeLabProps> = ({
             ))}
           </div>
 
-          <div className="p-3 bg-slate-900/70 border-t border-slate-800 flex items-center justify-between text-base font-mono text-slate-400">
+          <div className="p-2.5 bg-slate-900/70 border-t border-slate-800 flex items-center justify-between text-[11px] font-mono text-slate-400">
             <span>Memory: 14.2 MB // Latency: 12ms</span>
-            <span className="text-emerald-400 font-bold">Ready</span>
+            <span className="text-emerald-400 font-bold">Active</span>
           </div>
         </div>
       </div>
 
-      {/* Embedded Live Interactive Visual Sandbox Component (e.g. StockPredictorSandbox, LyricGenSandbox, etc.) */}
+      {/* Embedded Live Interactive Visual Sandbox Component */}
       {childrenSandbox && (
-        <div className="pt-4 border-t border-slate-800">
-          <div className="text-base font-mono text-[#00f2ff] font-bold uppercase tracking-wider mb-3">
+        <div className="pt-3 border-t border-slate-800">
+          <div className="text-xs font-mono text-[#00f2ff] font-bold uppercase tracking-wider mb-2">
             ▼ Live Interactive Visual Lab Simulator
           </div>
           {childrenSandbox}

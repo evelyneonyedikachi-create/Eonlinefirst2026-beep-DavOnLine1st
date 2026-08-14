@@ -123,10 +123,17 @@ export interface BootcampSprint {
 
 export interface SprintSubmissionData {
   sprintId: string;
+  sprintNumber?: number;
+  sprintTitle?: string;
   liveUrl: string;
   screenshotName?: string;
+  screenshotPreviewUrl?: string; // local preview only
   description: string;
   customizationNote: string;
+  skillsDemonstrated?: string[];
+  technologiesUsed?: string[];
+  badgeEarned?: string;
+  xpEarned?: number;
   submittedAt: string;
 }
 

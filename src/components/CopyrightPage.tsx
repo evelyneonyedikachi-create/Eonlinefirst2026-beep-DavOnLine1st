@@ -6,7 +6,9 @@ import {
   ExternalLink, 
   ArrowLeft,
   Mail,
-  Copyright
+  Copyright,
+  Building2,
+  MapPin
 } from "lucide-react";
 import { sound } from "../utils/soundEffects";
 
@@ -49,11 +51,13 @@ export const CopyrightPage: React.FC<CopyrightPageProps> = ({
         </h1>
 
         <p className="text-slate-300 text-base md:text-lg leading-relaxed max-w-3xl">
-          OnlineFirst is dedicated to open, hands-on computer science and AI education. Here is how intellectual property, third-party attributions, and open-source materials are managed across our studio.
+          OnlineFirst is a private, not-for-profit educational initiative focused on helping teenagers explore future careers, develop practical technology and AI skills, and build real projects.
         </p>
 
         <div className="pt-2 flex flex-wrap items-center gap-4 text-xs font-mono text-slate-400">
-          <span>© 2026 OnlineFirst. All Rights Reserved.</span>
+          <span>Last Updated: August 2026</span>
+          <span>•</span>
+          <span>© 2026 OnlineFirst · Austria</span>
           <span>•</span>
           <span>Contact: onlinefirst2026@gmail.com</span>
         </div>
@@ -68,7 +72,7 @@ export const CopyrightPage: React.FC<CopyrightPageProps> = ({
             <span>OnlineFirst Curriculum & Original Materials</span>
           </h2>
           <p className="text-base text-slate-300 leading-relaxed">
-            The structure of the 5-Sprint AI Bootcamp, career tracks taxonomy, interactive mission blueprints, UI design system, code challenges, and original written explanations created by OnlineFirst are protected by copyright.
+            The structure of the 5-Sprint AI Bootcamp, career tracks taxonomy, interactive mission blueprints, UI design system, code challenges, and original written explanations created by OnlineFirst are protected by applicable copyright law.
           </p>
           <p className="text-base text-slate-300 leading-relaxed">
             Students and teachers are granted a non-exclusive, revocable license to view, use, download, and modify project code templates for their own individual, non-commercial educational study.
@@ -100,14 +104,14 @@ export const CopyrightPage: React.FC<CopyrightPageProps> = ({
           </p>
         </section>
 
-        {/* Section 4: Copyright Inquiries & DMCA */}
+        {/* Section 4: Copyright Inquiries & Notice */}
         <section className="p-8 rounded-3xl bg-white/[0.02] border border-white/10 space-y-4">
           <h2 className="text-2xl font-bold text-white flex items-center gap-3">
             <span className="text-purple-400 font-mono text-lg">04.</span>
             <span>Inquiries & Take-Down Notices</span>
           </h2>
           <p className="text-base text-slate-300 leading-relaxed">
-            If you are a copyright or trademark owner and believe any content hosted on or linked from OnlineFirst infringes your intellectual property rights, please contact our administrative team directly at:
+            If you are a copyright or trademark owner and believe any content hosted on or linked from OnlineFirst infringes your intellectual property rights, please contact our team directly at:
           </p>
           <div className="p-4 rounded-xl bg-black/40 border border-white/10 text-slate-200 font-mono text-sm">
             Email: <a href="mailto:onlinefirst2026@gmail.com" className="text-[#00f2ff] hover:underline">onlinefirst2026@gmail.com</a><br />
@@ -122,11 +126,17 @@ export const CopyrightPage: React.FC<CopyrightPageProps> = ({
       {/* Footer Navigation */}
       <div className="flex flex-wrap items-center justify-between gap-4 p-6 rounded-2xl bg-white/[0.02] border border-white/10">
         <div className="text-sm text-slate-400 font-mono">
-          OnlineFirst · Private Non-Profit Educational Initiative
+          OnlineFirst — A private, not-for-profit educational initiative.
         </div>
         <div className="flex items-center gap-4 text-sm font-mono">
           {onNavigateTab && (
             <>
+              <button 
+                onClick={() => onNavigateTab("impressum")}
+                className="text-slate-300 hover:text-[#00f2ff] transition-colors cursor-pointer"
+              >
+                Impressum →
+              </button>
               <button 
                 onClick={() => onNavigateTab("privacy")}
                 className="text-slate-300 hover:text-[#00f2ff] transition-colors cursor-pointer"

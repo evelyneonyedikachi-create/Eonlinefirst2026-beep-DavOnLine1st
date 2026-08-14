@@ -111,6 +111,11 @@ class SoundEngine {
     }
   }
 
+  // Generic success chime
+  public playSuccess() {
+    this.playXpGain();
+  }
+
   // Career Commitment Protocol Fanfare
   public playCommitFanfare() {
     if (!this.isEnabled) return;

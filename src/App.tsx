@@ -9,6 +9,7 @@ import { AiMentorChat } from "./components/AiMentorChat";
 import { AboutPage } from "./components/AboutPage";
 import { ContactPage } from "./components/ContactPage";
 import { Dashboard } from "./components/Dashboard";
+import { GraduationPage } from "./components/GraduationPage";
 import { PrivacyPolicyPage } from "./components/PrivacyPolicyPage";
 import { TermsOfUsePage } from "./components/TermsOfUsePage";
 import { CopyrightPage } from "./components/CopyrightPage";
@@ -17,7 +18,7 @@ import { CareerDetailModal } from "./components/CareerDetailModal";
 import { CommitmentModal } from "./components/CommitmentModal";
 import { CAREER_TRACKS } from "./data/careersData";
 import { CareerTrack, UserProgressState, SprintSubmissionData } from "./types";
-import { getStoredProgress, saveProgress, calculateLevel } from "./utils/storage";
+import { getStoredProgress, saveProgress, calculateLevel, exportProgressJson } from "./utils/storage";
 import { sound } from "./utils/soundEffects";
 import { ShieldCheck, Lock, FileText, Info, Bot } from "lucide-react";
 
@@ -272,6 +273,20 @@ export default function App() {
             onSubmitSprint={handleSubmitSprint}
             activeSprintNum={targetSprintNum}
             onNavigateTab={handleNavigateTab}
+            onExportProgress={() => exportProgressJson(progress)}
+            onAskMentor={(query) => {
+              handleNavigateTab("mentor");
+            }}
+          />
+        )}
+
+        {/* Graduation / Mission Complete Celebration Page */}
+        {activeTab === "graduation" && (
+          <GraduationPage
+            progress={progress}
+            committedCareer={committedCareer}
+            onNavigateTab={handleNavigateTab}
+            onExportProgress={() => exportProgressJson(progress)}
           />
         )}
 

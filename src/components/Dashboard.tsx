@@ -26,9 +26,13 @@ import {
   Printer,
   X,
   AlertTriangle,
-  HardDrive
+  HardDrive,
+  ExternalLink,
+  FolderGit2,
+  GraduationCap,
+  Trophy
 } from "lucide-react";
-import { UserProgressState, CareerTrack } from "../types";
+import { UserProgressState, CareerTrack, SprintSubmissionData } from "../types";
 import { calculateLevel, LEVEL_TIERS, exportProgressJson, importProgressFromJson, resetLocalProgress } from "../utils/storage";
 import { BOOTCAMP_SPRINTS } from "../data/sprintsData";
 import { sound } from "../utils/soundEffects";
@@ -83,6 +87,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
   });
   const currentSprint = activeSprintIndex >= 0 ? BOOTCAMP_SPRINTS[activeSprintIndex] : BOOTCAMP_SPRINTS[0];
 
+  const completedSprintsList = BOOTCAMP_SPRINTS.filter((s) => 
+    progress.completedSprints.includes(s.id) || !!progress.submissions?.[s.id]
+  );
+  const isGraduated = progress.completedSprints.length >= 5;
+
   const handleSaveContract = () => {
     sound.playClick();
     onSaveNotes({
@@ -117,7 +126,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
       setTimeout(() => setImportFeedback(null), 3500);
     };
     reader.readAsText(file);
-    // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -131,47 +139,61 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
 
   return (
-    <div className="space-y-8">
-      {/* 1. Welcome Back & Telemetry Top Banner */}
+    <div className="space-y-10">
+      {/* 1. Top Telemetry Banner */}
       <div className="relative rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 p-6 md:p-8 overflow-hidden shadow-2xl">
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#00f2ff]/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
-            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/[0.04] backdrop-blur-md border border-[#00f2ff]/30 text-[#00f2ff] font-mono text-base font-bold uppercase">
-              <LayoutDashboard className="w-5 h-5 text-[#00f2ff]" />
-              <span>Welcome Back // Telemetry Cockpit</span>
+            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/[0.04] backdrop-blur-md border border-[#00f2ff]/30 text-[#00f2ff] font-mono text-sm font-bold uppercase">
+              <LayoutDashboard className="w-4 h-4 text-[#00f2ff]" />
+              <span>Mission Control // Progress Dashboard</span>
             </div>
 
             <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight">
               Ready to build today? <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#00f2ff] to-[#38bdf8]">{levelInfo.title}</span>
             </h2>
 
-            <p className="text-slate-300 text-base md:text-lg leading-relaxed font-medium">
-              You are currently on <strong className="text-white">Sprint {currentSprint.sprintNumber}: {currentSprint.title}</strong>. Complete your deliverables and level up your portfolio.
+            <p className="text-slate-300 text-base leading-relaxed font-medium">
+              You are currently on <strong className="text-white">Sprint {currentSprint.sprintNumber}: {currentSprint.title}</strong>. Complete your project record to build your verified portfolio.
             </p>
           </div>
 
-          {/* Quick CTA to Jump Back into Active Sprint */}
-          <button
-            onClick={() => {
-              sound.playClick();
-              onSelectTab("bootcamp", currentSprint.sprintNumber);
-            }}
-            className="inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-[#00f2ff] hover:bg-[#33f5ff] text-[#05070a] font-black text-lg transition-all cursor-pointer shadow-[0_0_30px_rgba(0,242,255,0.4)] shrink-0 self-start md:self-auto group"
-          >
-            <span>Continue Sprint {currentSprint.sprintNumber}</span>
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </button>
+          <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
+            {isGraduated && (
+              <button
+                onClick={() => {
+                  sound.playClick();
+                  onSelectTab("graduation");
+                }}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-[#05070a] font-black text-base transition-all cursor-pointer shadow-[0_0_30px_rgba(251,191,36,0.4)]"
+              >
+                <GraduationCap className="w-5 h-5" />
+                <span>Mission Complete Page</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => {
+                sound.playClick();
+                onSelectTab("bootcamp", currentSprint.sprintNumber);
+              }}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-[#00f2ff] hover:bg-[#33f5ff] text-[#05070a] font-black text-base transition-all cursor-pointer shadow-[0_0_30px_rgba(0,242,255,0.4)] group"
+            >
+              <span>Continue Sprint {currentSprint.sprintNumber}</span>
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* 2. Key Telemetry Metrics Grid (XP, Level, Streak, Committed Career) */}
+      {/* 2. Key Telemetry Metrics Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total XP Card */}
         <div className="p-5 rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/10 space-y-1.5 shadow-lg">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-mono uppercase text-slate-300 font-semibold">Total XP Earned</span>
-            <Sparkles className="w-5 h-5 text-[#00f2ff]" />
+            <span className="text-xs font-mono uppercase text-slate-300 font-semibold">Total XP Earned</span>
+            <Sparkles className="w-4 h-4 text-[#00f2ff]" />
           </div>
           <div className="text-3xl font-black text-white font-mono">{progress.xp.toLocaleString()}</div>
           <div className="text-xs text-slate-400 font-mono">
@@ -182,8 +204,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
         {/* Builder Level Card */}
         <div className="p-5 rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/10 space-y-1.5 shadow-lg">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-mono uppercase text-slate-300 font-semibold">Rank Tier</span>
-            <Award className="w-5 h-5 text-amber-400" />
+            <span className="text-xs font-mono uppercase text-slate-300 font-semibold">Rank Tier</span>
+            <Award className="w-4 h-4 text-amber-400" />
           </div>
           <div className="text-3xl font-black text-amber-400 font-mono flex items-center gap-2">
             <span>{levelInfo.badge}</span>
@@ -195,8 +217,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
         {/* Streak Days Card */}
         <div className="p-5 rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/10 space-y-1.5 shadow-lg">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-mono uppercase text-slate-300 font-semibold">Coding Streak</span>
-            <Flame className="w-5 h-5 text-orange-400" />
+            <span className="text-xs font-mono uppercase text-slate-300 font-semibold">Coding Streak</span>
+            <Flame className="w-4 h-4 text-orange-400" />
           </div>
           <div className="text-3xl font-black text-orange-400 font-mono flex items-center gap-2">
             <span>🔥</span>
@@ -219,10 +241,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
         {/* Committed Career Track */}
         <div className="p-5 rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/10 space-y-1.5 shadow-lg">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-mono uppercase text-slate-300 font-semibold">Committed Track</span>
-            <Target className="w-5 h-5 text-purple-400" />
+            <span className="text-xs font-mono uppercase text-slate-300 font-semibold">Committed Track</span>
+            <Target className="w-4 h-4 text-purple-400" />
           </div>
-          <div className="text-lg font-black text-white truncate">
+          <div className="text-base font-black text-white truncate">
             {committedCareer ? committedCareer.shortTitle : "Exploring All"}
           </div>
           <div className="text-xs font-mono text-purple-300">
@@ -231,7 +253,162 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
       </div>
 
-      {/* 3. LOCAL LEARNING PROGRESS STORAGE & BACKUP CONTROLS CARD */}
+      {/* 3. MY PROJECTS // PERSONAL PORTFOLIO SECTION */}
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-xs font-mono text-[#00f2ff] uppercase font-bold tracking-wider">
+              <FolderGit2 className="w-4 h-4 text-[#00f2ff]" />
+              <span>Personal Project Record</span>
+            </div>
+            <h3 className="text-2xl md:text-3xl font-black text-white">
+              My Projects ({completedSprintsList.length} / 5)
+            </h3>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {isGraduated ? (
+              <button
+                onClick={() => {
+                  sound.playClick();
+                  onSelectTab("graduation");
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#00f2ff] to-emerald-400 text-[#05070a] font-black text-xs uppercase font-mono tracking-wide cursor-pointer shadow-lg"
+              >
+                <Trophy className="w-4 h-4" />
+                <span>View Full Graduation Page</span>
+              </button>
+            ) : (
+              <span className="text-xs font-mono text-slate-400 bg-white/[0.04] px-3.5 py-2 rounded-xl border border-white/10">
+                Complete all 5 to unlock Graduation
+              </span>
+            )}
+          </div>
+        </div>
+
+        {completedSprintsList.length === 0 ? (
+          <div className="p-8 rounded-3xl bg-white/[0.02] border border-dashed border-white/15 text-center space-y-4">
+            <div className="w-14 h-14 rounded-2xl bg-white/[0.04] text-slate-400 flex items-center justify-center mx-auto text-2xl">
+              💻
+            </div>
+            <div className="space-y-1">
+              <h4 className="text-lg font-bold text-white">No Completed Projects Recorded Yet</h4>
+              <p className="text-sm text-slate-400 max-w-md mx-auto">
+                Finish Sprint 1 to record your first machine learning market predictor and start building your personal project portfolio.
+              </p>
+            </div>
+            <button
+              onClick={() => onSelectTab("bootcamp", 1)}
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#00f2ff] hover:bg-[#33f5ff] text-[#05070a] font-bold text-xs transition-all cursor-pointer"
+            >
+              <span>Start Sprint 1 Now</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {completedSprintsList.map((sprint) => {
+              const sub = progress.submissions?.[sprint.id];
+              const dateStr = sub?.submittedAt ? new Date(sub.submittedAt).toLocaleDateString(undefined, { month: "short", year: "numeric" }) : "Recently Completed";
+
+              return (
+                <div
+                  key={sprint.id}
+                  className="p-6 rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/15 hover:border-[#00f2ff]/40 transition-all flex flex-col justify-between space-y-5 shadow-xl group"
+                >
+                  <div className="space-y-4">
+                    {/* Header */}
+                    <div className="flex items-center justify-between">
+                      <span className="px-2.5 py-0.5 rounded-lg bg-white/[0.06] border border-white/10 font-mono text-xs font-bold text-[#00f2ff]">
+                        SPRINT 0{sprint.sprintNumber}
+                      </span>
+                      <span className="text-xs font-mono text-slate-400">
+                        {dateStr}
+                      </span>
+                    </div>
+
+                    {/* Title */}
+                    <div>
+                      <h4 className="text-lg font-black text-white group-hover:text-[#00f2ff] transition-colors leading-tight">
+                        {sprint.title}
+                      </h4>
+                      <p className="text-xs text-slate-300 mt-1 line-clamp-2">
+                        {sub?.description || sprint.project.summary}
+                      </p>
+                    </div>
+
+                    {/* Screenshot preview if available */}
+                    {sub?.screenshotPreviewUrl && (
+                      <div className="rounded-xl overflow-hidden border border-white/10 max-h-28">
+                        <img
+                          src={sub.screenshotPreviewUrl}
+                          alt={sprint.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+
+                    {/* Customization */}
+                    {sub?.customizationNote && (
+                      <div className="p-3 rounded-xl bg-black/40 border border-white/10 text-xs text-slate-300 space-y-0.5">
+                        <span className="font-mono text-[10px] text-[#00f2ff] font-bold uppercase block">
+                          What I Changed:
+                        </span>
+                        <p className="italic text-slate-200">
+                          "{sub.customizationNote}"
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Skills Demonstrated */}
+                    <div className="space-y-1">
+                      <span className="font-mono text-[10px] text-slate-400 uppercase font-bold block">
+                        Skills Demonstrated:
+                      </span>
+                      <div className="flex flex-wrap gap-1">
+                        {sprint.skillsList.map((skill, sIdx) => (
+                          <span
+                            key={sIdx}
+                            className="px-2 py-0.5 rounded-md bg-black/50 border border-white/10 text-[11px] font-mono text-slate-300"
+                          >
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="pt-2 border-t border-white/10 flex items-center justify-between gap-2">
+                    {sub?.liveUrl ? (
+                      <a
+                        href={sub.liveUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-mono text-[#00f2ff] hover:underline font-bold"
+                      >
+                        <span>View Project</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    ) : (
+                      <span className="text-xs font-mono text-slate-500">Local Project</span>
+                    )}
+
+                    <button
+                      onClick={() => onSelectTab("bootcamp", sprint.sprintNumber)}
+                      className="text-xs font-mono text-slate-300 hover:text-white hover:underline cursor-pointer"
+                    >
+                      Workspace →
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* 4. LOCAL LEARNING PROGRESS STORAGE & BACKUP CONTROLS CARD */}
       <div className="rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 p-6 md:p-8 space-y-6 shadow-2xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
           <div className="space-y-1">
@@ -324,11 +501,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
         )}
       </div>
 
-      {/* 4. Sprint Milestones Roadmap Grid (5 Sprints) */}
+      {/* 5. Sprint Milestones Roadmap Grid (5 Sprints) */}
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="space-y-1">
-            <div className="text-base font-mono text-[#00f2ff] uppercase font-bold tracking-wider">
+            <div className="text-sm font-mono text-[#00f2ff] uppercase font-bold tracking-wider">
               Curriculum Progression
             </div>
             <h3 className="text-2xl md:text-3xl font-black text-white">
@@ -336,7 +513,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </h3>
           </div>
 
-          <div className="text-base font-mono text-slate-300 bg-white/[0.04] px-4 py-2 rounded-xl border border-white/10">
+          <div className="text-sm font-mono text-slate-300 bg-white/[0.04] px-4 py-2 rounded-xl border border-white/10">
             Overall Completion: <strong className="text-[#00f2ff]">{overallProgressPct}%</strong> ({completedTotal}/{allMilestones.length} Milestones)
           </div>
         </div>
@@ -364,22 +541,22 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <div className="space-y-4">
                   {/* Top Status & Badge */}
                   <div className="flex items-center justify-between">
-                    <span className="px-3 py-1 rounded-xl bg-white/[0.05] border border-white/10 font-mono text-base font-bold text-[#00f2ff]">
+                    <span className="px-3 py-1 rounded-xl bg-white/[0.05] border border-white/10 font-mono text-xs font-bold text-[#00f2ff]">
                       SPRINT 0{sprint.sprintNumber}
                     </span>
 
                     {isDone ? (
-                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-base font-mono font-bold">
-                        <CheckCircle2 className="w-4 h-4" />
+                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-xs font-mono font-bold">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
                         <span>Completed</span>
                       </span>
                     ) : isInProgress ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#00f2ff]/15 text-[#00f2ff] border border-[#00f2ff]/30 text-base font-mono font-bold">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#00f2ff]/15 text-[#00f2ff] border border-[#00f2ff]/30 text-xs font-mono font-bold">
                         <span className="w-2 h-2 rounded-full bg-[#00f2ff] animate-ping" />
                         <span>In Progress</span>
                       </span>
                     ) : (
-                      <span className="px-3 py-1 rounded-xl bg-white/[0.04] text-slate-400 border border-white/10 text-base font-mono">
+                      <span className="px-3 py-1 rounded-xl bg-white/[0.04] text-slate-400 border border-white/10 text-xs font-mono">
                         Not Started
                       </span>
                     )}
@@ -390,7 +567,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     <h4 className="text-xl font-black text-white group-hover:text-[#00f2ff] transition-colors leading-tight">
                       {sprint.title}
                     </h4>
-                    <div className="flex items-center gap-3 text-base font-mono text-slate-400 mt-1.5">
+                    <div className="flex items-center gap-3 text-xs font-mono text-slate-400 mt-1.5">
                       <span className="flex items-center gap-1">
                         <Clock className="w-3.5 h-3.5 text-[#00f2ff]" />
                         {sprint.estimatedTime}
@@ -414,10 +591,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                   {/* Main Deliverable Snippet */}
                   <div className="p-3 rounded-xl bg-black/50 border border-white/10 space-y-1">
-                    <span className="text-xs font-mono text-slate-400 block font-bold uppercase">
+                    <span className="text-[10px] font-mono text-slate-400 block font-bold uppercase">
                       Deliverable:
                     </span>
-                    <p className="text-sm text-slate-200 font-medium line-clamp-2">
+                    <p className="text-xs text-slate-200 font-medium line-clamp-2">
                       {sprint.project.deliverable}
                     </p>
                   </div>
@@ -443,7 +620,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     sound.playClick();
                     onSelectTab("bootcamp", sprint.sprintNumber);
                   }}
-                  className={`w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-base transition-all cursor-pointer ${
+                  className={`w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all cursor-pointer ${
                     isDone
                       ? "bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/10"
                       : "bg-[#00f2ff] hover:bg-[#33f5ff] text-[#05070a] shadow-[0_0_15px_rgba(0,242,255,0.25)]"
@@ -458,10 +635,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
       </div>
 
-      {/* 5. Parent / Mentor Pledge Contract Section */}
+      {/* 6. Parent / Mentor Pledge Contract Section */}
       <div className="rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 p-6 md:p-8 space-y-6 shadow-2xl">
-        <div className="flex items-center gap-2 text-base font-mono text-[#00f2ff] font-bold uppercase tracking-wider mb-1">
-          <ShieldCheck className="w-5 h-5 text-[#00f2ff]" />
+        <div className="flex items-center gap-2 text-xs font-mono text-[#00f2ff] font-bold uppercase tracking-wider mb-1">
+          <ShieldCheck className="w-4 h-4 text-[#00f2ff]" />
           <span>Accountability & Family Tech Bounty Deal</span>
         </div>
 
@@ -469,53 +646,53 @@ export const Dashboard: React.FC<DashboardProps> = ({
           Parent & Mentor Pledge Contract
         </h3>
 
-        <p className="text-base text-slate-300 leading-relaxed max-w-3xl">
+        <p className="text-sm text-slate-300 leading-relaxed max-w-3xl">
           Commit to completing your sprints with your family or mentor. Set an agreed reward for hitting Sprint 3 or Sprint 5 milestones (like a tech gear upgrade, coding bounty, or pizza party).
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="space-y-2">
-            <label className="text-base font-bold text-white block">
+            <label className="text-xs font-bold text-white uppercase font-mono tracking-wider block">
               Agreed Milestone Reward / Bounty:
             </label>
             <input
               type="text"
               value={parentPledgeReward}
               onChange={(e) => setParentPledgeReward(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-black/50 border border-white/15 text-white text-base focus:outline-none focus:border-[#00f2ff]"
+              className="w-full px-4 py-3 rounded-xl bg-black/50 border border-white/15 text-white text-xs focus:outline-none focus:border-[#00f2ff]"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-base font-bold text-white block">
+            <label className="text-xs font-bold text-white uppercase font-mono tracking-wider block">
               Personal Ambition & Target Completion Date:
             </label>
             <input
               type="text"
               value={personalNotes}
               onChange={(e) => setPersonalNotes(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-black/50 border border-white/15 text-white text-base focus:outline-none focus:border-[#00f2ff]"
+              className="w-full px-4 py-3 rounded-xl bg-black/50 border border-white/15 text-white text-xs focus:outline-none focus:border-[#00f2ff]"
             />
           </div>
         </div>
 
         <div className="flex items-center justify-between pt-2">
           {saveSuccess ? (
-            <span className="text-base text-emerald-400 font-bold flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5" />
+            <span className="text-xs text-emerald-400 font-bold flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4" />
               Pledge Contract Saved to Matrix!
             </span>
           ) : (
-            <span className="text-sm text-slate-400 font-mono">
+            <span className="text-xs text-slate-400 font-mono">
               Auto-saved locally in your browser storage
             </span>
           )}
 
           <button
             onClick={handleSaveContract}
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-white/[0.08] hover:bg-white/[0.14] border border-white/15 text-white font-bold text-base transition-all cursor-pointer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/[0.08] hover:bg-white/[0.14] border border-white/15 text-white font-bold text-xs transition-all cursor-pointer"
           >
-            <Save className="w-4 h-4 text-[#00f2ff]" />
+            <Save className="w-3.5 h-3.5 text-[#00f2ff]" />
             <span>Save Pledge</span>
           </button>
         </div>
@@ -564,19 +741,26 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
               <div className="space-y-1 border-t border-white/10 pt-3">
                 <span className="text-xs text-slate-400 font-mono uppercase block">Specialization Track:</span>
-                <span className="text-white font-bold text-base">{committedCareer ? committedCareer.title : "General AI & Python Exploration"}</span>
+                <span className="text-white font-bold text-sm">{committedCareer ? committedCareer.title : "General AI & Python Exploration"}</span>
               </div>
 
               <div className="space-y-1">
-                <span className="text-xs text-slate-400 font-mono uppercase block">Pledge Bounty Deal:</span>
-                <p className="text-sm text-slate-300 italic">"{parentPledgeReward}"</p>
+                <span className="text-xs text-slate-400 font-mono uppercase block">Completed Projects:</span>
+                <p className="text-xs text-slate-300 font-mono">
+                  {completedSprintsList.length > 0 ? completedSprintsList.map(s => `Sprint ${s.sprintNumber}: ${s.title}`).join(" · ") : "Sprint 1 in progress"}
+                </p>
+              </div>
+
+              {/* MANDATORY EDUCATIONAL DISCLAIMER */}
+              <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/10 text-xs text-slate-400 leading-relaxed">
+                <strong>Disclaimer:</strong> OnlineFirst is a private, not-for-profit educational initiative. This completion record documents participation and project work and is not an accredited academic qualification.
               </div>
             </div>
 
             <div className="flex items-center justify-between pt-2">
               <button
                 onClick={handleExport}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white text-sm font-mono cursor-pointer border border-white/10"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white text-xs font-mono cursor-pointer border border-white/10"
               >
                 <Download className="w-4 h-4" />
                 <span>Save JSON Backup</span>
@@ -584,7 +768,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
               <button
                 onClick={() => window.print()}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#00f2ff] hover:bg-[#38f6ff] text-[#05070a] font-bold text-sm font-mono uppercase tracking-wide cursor-pointer shadow-[0_0_15px_rgba(0,242,255,0.3)]"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#00f2ff] hover:bg-[#38f6ff] text-[#05070a] font-bold text-xs font-mono uppercase tracking-wide cursor-pointer shadow-[0_0_15px_rgba(0,242,255,0.3)]"
               >
                 <Printer className="w-4 h-4" />
                 <span>Print / Save PDF</span>
@@ -598,25 +782,25 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {showResetModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-in fade-in duration-200">
           <div className="w-full max-w-md bg-[#080d14] border border-red-500/40 rounded-3xl p-6 space-y-5 shadow-2xl text-slate-200">
-            <div className="flex items-center gap-3 text-red-400 font-bold text-lg">
-              <AlertTriangle className="w-6 h-6" />
+            <div className="flex items-center gap-3 text-red-400 font-bold text-base">
+              <AlertTriangle className="w-5 h-5" />
               <span>Reset Local Progress?</span>
             </div>
 
-            <p className="text-sm text-slate-300 leading-relaxed">
-              This will permanently remove your OnlineFirst learning progress (XP, streak, milestones, and notes) stored in this browser. This cannot be undone unless you have exported a JSON backup.
+            <p className="text-xs text-slate-300 leading-relaxed">
+              This will permanently remove your OnlineFirst learning progress (XP, streak, milestones, projects, and notes) stored in this browser. This cannot be undone unless you have exported a JSON backup.
             </p>
 
             <div className="flex items-center justify-end gap-3 pt-2">
               <button
                 onClick={() => setShowResetModal(false)}
-                className="px-4 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white text-sm font-mono cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white text-xs font-mono cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmReset}
-                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-sm font-mono cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs font-mono cursor-pointer"
               >
                 Yes, Reset Everything
               </button>
