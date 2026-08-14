@@ -30,7 +30,7 @@ export const SprintDeliverables: React.FC<SprintDeliverablesProps> = ({
   const checkedRequired = deliverables.filter((d) => d.required && checkedIds.includes(d.id)).length;
 
   return (
-    <div className="rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 p-6 md:p-8 space-y-6 shadow-2xl">
+    <div id="sprint-deliverables" className="rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 p-6 md:p-8 space-y-6 shadow-2xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
         <div>
           <div className="flex items-center gap-2 text-base font-mono text-[#00f2ff] font-bold uppercase tracking-wider mb-1">

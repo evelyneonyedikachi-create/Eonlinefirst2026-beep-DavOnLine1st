@@ -214,7 +214,7 @@ print("Model coefficients:", model.coef_)`
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Studio Header Banner in Frosted Glass */}
       <div className="relative rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 p-6 md:p-8 overflow-hidden shadow-2xl">
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#00f2ff]/10 rounded-full blur-3xl pointer-events-none" />
@@ -228,8 +228,8 @@ print("Model coefficients:", model.coef_)`
             Meet Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#00f2ff] to-[#94a3b8]">AI Tech Leads</span>
           </h2>
 
-          <p className="text-slate-300 text-base md:text-lg leading-relaxed">
-            Need code review, architectural advice, or a quick 10-minute micro-quest? Select a mentor persona below and get instant, teen-tailored guidance powered by server-side Gemini 3.7 Flash.
+          <p className="text-slate-300 text-base md:text-lg leading-relaxed font-medium">
+            Need code review, architectural advice, or a quick 10-minute micro-quest? Select a mentor below to get instant, practical guidance tailored for young builders.
           </p>
         </div>
       </div>
@@ -251,39 +251,42 @@ print("Model coefficients:", model.coef_)`
                   : "bg-white/[0.03] border-white/10 hover:border-white/20 hover:bg-white/[0.06]"
               }`}
             >
-              <div className="flex items-center gap-3 mb-3">
-                <span className="text-3xl">{persona.avatar}</span>
-                <div>
-                  <h4 className="font-extrabold text-white text-lg leading-tight">
-                    {persona.name}
-                  </h4>
-                  <p className="text-base text-[#00f2ff] font-mono">{persona.role}</p>
+              <div className="space-y-2.5">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl p-1.5 rounded-xl bg-white/[0.05] border border-white/10">{persona.avatar}</span>
+                  <div>
+                    <h4 className="font-extrabold text-white text-lg leading-tight">
+                      {persona.name}
+                    </h4>
+                    <p className="text-xs text-[#00f2ff] font-mono font-semibold">{persona.role}</p>
+                  </div>
                 </div>
+
+                <p className="text-sm text-slate-300 leading-relaxed italic line-clamp-2">
+                  "{persona.quote}"
+                </p>
               </div>
 
-              <p className="text-base text-slate-300 leading-relaxed italic mb-3">
-                "{persona.quote}"
-              </p>
-
-              <div className="text-base text-slate-400 font-mono">
-                {persona.styleDescription.split(".")[0]}
+              <div className="pt-3 mt-3 border-t border-white/10 text-xs text-slate-400 font-mono flex items-center justify-between">
+                <span>{persona.styleDescription.split(".")[0]}</span>
+                {isSelected && <span className="text-[#00f2ff] font-bold">Active Lead ✓</span>}
               </div>
             </button>
           );
         })}
       </div>
 
-      {/* Sub Navigation in Frosted Glass */}
-      <div className="flex flex-wrap items-center gap-3 border-b border-white/10 pb-4">
+      {/* Clear Visual Divider / Mode Selector */}
+      <div className="p-2 rounded-2xl bg-white/[0.02] border border-white/10 flex flex-wrap items-center gap-2">
         <button
           onClick={() => {
             sound.playTab();
             setActiveTab("chat");
           }}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-base font-bold font-mono transition-all cursor-pointer backdrop-blur-md ${
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold font-mono transition-all cursor-pointer backdrop-blur-md ${
             activeTab === "chat"
-              ? "bg-[#00f2ff]/15 text-[#00f2ff] border border-[#00f2ff] shadow-sm"
-              : "text-[#94a3b8] hover:text-white"
+              ? "bg-[#00f2ff] text-[#05070a] shadow-[0_0_15px_rgba(0,242,255,0.35)] font-black"
+              : "text-slate-300 hover:text-white bg-white/[0.04]"
           }`}
         >
           <MessageSquare className="w-4 h-4" />
@@ -295,10 +298,10 @@ print("Model coefficients:", model.coef_)`
             sound.playTab();
             setActiveTab("review");
           }}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-base font-bold font-mono transition-all cursor-pointer backdrop-blur-md ${
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold font-mono transition-all cursor-pointer backdrop-blur-md ${
             activeTab === "review"
-              ? "bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-sm"
-              : "text-[#94a3b8] hover:text-white"
+              ? "bg-purple-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.35)] font-black"
+              : "text-slate-300 hover:text-white bg-white/[0.04]"
           }`}
         >
           <Code2 className="w-4 h-4" />
@@ -310,10 +313,10 @@ print("Model coefficients:", model.coef_)`
             sound.playTab();
             setActiveTab("challenge");
           }}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-base font-bold font-mono transition-all cursor-pointer backdrop-blur-md ${
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold font-mono transition-all cursor-pointer backdrop-blur-md ${
             activeTab === "challenge"
-              ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm"
-              : "text-[#94a3b8] hover:text-white"
+              ? "bg-amber-400 text-[#05070a] shadow-[0_0_15px_rgba(251,191,36,0.35)] font-black"
+              : "text-slate-300 hover:text-white bg-white/[0.04]"
           }`}
         >
           <Zap className="w-4 h-4" />

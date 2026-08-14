@@ -26,7 +26,7 @@ export const SprintVisualMockupCard: React.FC<SprintVisualMockupCardProps> = ({
   };
 
   return (
-    <div className="rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 p-6 md:p-8 space-y-5 shadow-2xl relative overflow-hidden">
+    <div id="sprint-blueprint" className="rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 p-6 md:p-8 space-y-5 shadow-2xl relative overflow-hidden">
       {/* Glow backdrop */}
       <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-cyan-500/10 to-purple-500/10 rounded-full blur-3xl pointer-events-none" />
 

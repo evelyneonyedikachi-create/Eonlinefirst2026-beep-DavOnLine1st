@@ -101,13 +101,13 @@ export const CommitmentModal: React.FC<CommitmentModalProps> = ({
             <div className="pr-8">
               <div className="inline-flex items-center gap-2 text-[#00f2ff] font-mono text-base font-bold uppercase tracking-wider mb-2">
                 <ShieldCheck className="w-5 h-5 text-[#00f2ff]" />
-                <span>The Commitment Protocol // Age 15 Career Catalyst</span>
+                <span>The Commitment Protocol // Time & Focus Investment</span>
               </div>
               <h2 className="text-3xl md:text-4xl font-black text-white">
-                Commit to: <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#00f2ff] to-[#94a3b8]">{career.title}</span>
+                Choose Path: <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#00f2ff] to-[#94a3b8]">{career.title}</span>
               </h2>
               <p className="text-slate-300 text-base md:text-lg mt-1.5 leading-relaxed">
-                Lock in your focus, build real projects, and bypass the traditional 4-year grind.
+                <strong className="text-white">You're committing your time and curiosity — not money.</strong> Lock in your focus, build real projects, and bypass the traditional 4-year grind.
               </p>
             </div>
 
@@ -166,7 +166,7 @@ export const CommitmentModal: React.FC<CommitmentModalProps> = ({
                   className="mt-1 w-5 h-5 rounded bg-black/40 border-white/20 text-[#00f2ff] focus:ring-0 cursor-pointer"
                 />
                 <span>
-                  I pledge to <strong className="text-white">build working projects</strong> rather than get stuck in tutorial hell. I will code bots, train models, and share my work publicly.
+                  I pledge to <strong className="text-white">invest my time in building working projects</strong> rather than get stuck in tutorial hell. I will code bots, train models, and share my work publicly.
                 </span>
               </label>
             </div>
@@ -190,7 +190,7 @@ export const CommitmentModal: React.FC<CommitmentModalProps> = ({
                 className="flex-1 py-4 px-6 rounded-xl bg-[#00f2ff] hover:bg-[#33f5ff] text-[#05070a] font-black text-base tracking-wide uppercase transition-all shadow-[0_0_25px_rgba(0,242,255,0.35)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2.5 cursor-pointer"
               >
                 <ShieldCheck className="w-5 h-5 text-[#05070a]" />
-                <span>Lock In Commitment & Claim +500 XP</span>
+                <span>Lock In This Path & Claim +500 XP</span>
               </button>
             </div>
           </div>

@@ -209,8 +209,36 @@ export const BootcampSprints: React.FC<BootcampSprintsProps> = ({
         })}
       </div>
 
+      {/* Persistent Sticky Internal Sprint Navigation Bar */}
+      <div className="sticky top-20 z-30 p-2 rounded-2xl bg-[#05070a]/90 backdrop-blur-xl border border-white/15 shadow-2xl flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+        <span className="px-3 py-1 text-xs font-mono font-bold uppercase text-[#00f2ff] whitespace-nowrap">
+          Sprint {activeSprint.sprintNumber} Menu:
+        </span>
+        {[
+          { id: "sprint-overview", label: "Mission & Hook" },
+          { id: "sprint-blueprint", label: "Blueprint Mockup" },
+          { id: "sprint-roadmap", label: "Step-by-Step Roadmap" },
+          { id: "sprint-milestones", label: "Milestones (+XP)" },
+          { id: "sprint-deliverables", label: "Deliverables Checklist" },
+          { id: "sprint-resources", label: "Skills & Resources" },
+          { id: "practice-lab-section", label: "Practice Lab Simulator" },
+          { id: "submit-sprint-section", label: "Submit & Proof" },
+        ].map((item) => (
+          <button
+            key={item.id}
+            onClick={() => {
+              sound.playClick();
+              scrollToSection(item.id);
+            }}
+            className="px-3 py-1.5 rounded-xl text-xs font-mono font-bold whitespace-nowrap bg-white/[0.04] hover:bg-[#00f2ff]/20 text-slate-300 hover:text-white border border-white/10 transition-all cursor-pointer"
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+
       {/* 3. SPRINT HERO SECTION */}
-      <div className="rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 p-6 md:p-8 space-y-6 shadow-2xl relative overflow-hidden">
+      <div id="sprint-overview" className="rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 p-6 md:p-8 space-y-6 shadow-2xl relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
           <div className="flex items-start gap-4">
             <div className="p-3.5 rounded-2xl bg-white/[0.06] border border-white/10 text-[#00f2ff] font-black shadow-lg">
@@ -331,7 +359,7 @@ export const BootcampSprints: React.FC<BootcampSprintsProps> = ({
       />
 
       {/* 7. SPRINT MILESTONES & XP CHECKPOINTS */}
-      <div className="rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 p-6 md:p-8 space-y-6 shadow-2xl">
+      <div id="sprint-milestones" className="rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 p-6 md:p-8 space-y-6 shadow-2xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
           <div>
             <div className="flex items-center gap-2 text-base font-mono text-[#00f2ff] font-bold uppercase tracking-wider mb-1">

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FuturisticBackground } from "./components/FuturisticBackground";
 import { Header } from "./components/Header";
+import { IntroVideoPage } from "./components/IntroVideoPage";
 import { LandingHero } from "./components/LandingHero";
 import { ProgramsPage } from "./components/ProgramsPage";
 import { BootcampSprints } from "./components/BootcampSprints";
@@ -16,7 +17,8 @@ import { getStoredProgress, saveProgress, calculateLevel } from "./utils/storage
 import { sound } from "./utils/soundEffects";
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<string>("home");
+  // Two-stage entry: Start with intro video page
+  const [activeTab, setActiveTab] = useState<string>("intro");
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [progress, setProgress] = useState<UserProgressState>(getStoredProgress());
   
@@ -192,30 +194,48 @@ export default function App() {
 
   const committedCareer = CAREER_TRACKS.find((c) => c.id === progress.committedCareerId) || null;
 
+  // If activeTab is "intro", render the clean, minimal Intro / Video Entry Page
+  if (activeTab === "intro") {
+    return (
+      <div className="relative min-h-screen bg-[#05070a] text-[#e0e6ed] font-sans selection:bg-[#00f2ff]/30 selection:text-[#00f2ff]">
+        <FuturisticBackground />
+        <IntroVideoPage
+          onEnterApp={(careerId) => {
+            if (careerId) {
+              handleNavigateTab("programs", careerId);
+            } else {
+              handleNavigateTab("home");
+            }
+          }}
+          soundEnabled={soundEnabled}
+          onToggleSound={handleToggleSound}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="relative min-h-screen bg-[#05070a] text-[#e0e6ed] font-sans selection:bg-[#00f2ff]/30 selection:text-[#00f2ff] flex flex-col justify-between">
       {/* Dynamic Cyber Grid & Starfield Background */}
       <FuturisticBackground />
 
-      {/* Persistent Fixed Navigation Header across ALL pages */}
+      {/* Persistent Simplified Navigation Header: Home | Careers | Sprints | AI Mentors | About + MY MISSION */}
       <Header
         activeTab={activeTab}
         onSelectTab={handleNavigateTab}
-        progress={progress}
-        onCheckIn={handleDailyCheckIn}
+        onWatchIntro={() => handleNavigateTab("intro")}
         soundEnabled={soundEnabled}
         onToggleSound={handleToggleSound}
-        committedCareerTitle={committedCareer?.title}
+        streakDays={progress.streakDays}
       />
 
       {/* Main Page Container */}
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 flex-1 w-full">
-        {/* Page 1: Home (Low text density + 50% viewport Hero Video) */}
+        {/* Page 1: Clean, Professional Dashboard-Style Landing Page */}
         {activeTab === "home" && (
           <LandingHero
             onNavigateTab={handleNavigateTab}
-            soundEnabled={soundEnabled}
-            onToggleSound={handleToggleSound}
+            onWatchIntro={() => handleNavigateTab("intro")}
           />
         )}
 
@@ -279,19 +299,49 @@ export default function App() {
               handleUpdateProgress({ notes: { ...progress.notes, ...notes } });
             }}
             onSelectTab={handleNavigateTab}
+            onCheckIn={handleDailyCheckIn}
           />
         )}
       </main>
 
-      {/* Frosted Glass Footer */}
+      {/* Clean Glass Footer */}
       <footer className="relative z-10 border-t border-white/10 bg-[#05070a]/90 backdrop-blur-xl py-10 px-4 text-center text-base text-slate-300 font-mono space-y-3">
         <div className="flex items-center justify-center gap-2 text-[#e0e6ed] text-base font-semibold">
           <span className="w-2.5 h-2.5 rounded-full bg-[#00f2ff] shadow-[0_0_10px_#00f2ff]" />
-          <span className="tracking-wide">ONLINEFIRST AI Studio // Frosted Glass Interface</span>
+          <span className="tracking-wide">ONLINEFIRST AI Studio // Built for Future AI Engineers</span>
         </div>
         <p className="max-w-2xl mx-auto text-slate-300 text-base leading-relaxed">
-          Empowering the next generation with real-world AI engineering, high-earning specialization tracks, and hands-on code deliverables.
+          Empowering teenagers with real-world AI engineering, high-growth specialization tracks, and hands-on portfolio deliverables.
         </p>
+        <div className="pt-2 flex items-center justify-center gap-6 text-sm text-slate-400">
+          <button 
+            onClick={() => handleNavigateTab("intro")} 
+            className="hover:text-[#00f2ff] transition-colors cursor-pointer"
+          >
+            Watch Intro Video
+          </button>
+          <span>·</span>
+          <button 
+            onClick={() => handleNavigateTab("programs")} 
+            className="hover:text-[#00f2ff] transition-colors cursor-pointer"
+          >
+            9 Career Tracks
+          </button>
+          <span>·</span>
+          <button 
+            onClick={() => handleNavigateTab("bootcamp")} 
+            className="hover:text-[#00f2ff] transition-colors cursor-pointer"
+          >
+            5 Build Sprints
+          </button>
+          <span>·</span>
+          <button 
+            onClick={() => handleNavigateTab("contact")} 
+            className="hover:text-[#00f2ff] transition-colors cursor-pointer"
+          >
+            Contact & Consultation
+          </button>
+        </div>
       </footer>
 
       {/* Career Detail Modal */}

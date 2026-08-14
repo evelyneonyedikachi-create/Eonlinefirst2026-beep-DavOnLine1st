@@ -31,6 +31,7 @@ interface DashboardProps {
   committedCareer: CareerTrack | null;
   onSaveNotes: (notes: Record<string, string>) => void;
   onSelectTab: (tab: string, sprintNum?: number) => void;
+  onCheckIn?: () => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -38,6 +39,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   committedCareer,
   onSaveNotes,
   onSelectTab,
+  onCheckIn,
 }) => {
   const [parentPledgeReward, setParentPledgeReward] = useState<string>(
     progress.notes["reward_contract"] || "Reward on Sprint 3 completion: New Mechanical Gaming Keyboard or $150 Tech Bounty"
@@ -46,6 +48,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
     progress.notes["study_notes"] || "Goal: Code my first live trading bot before school semester starts!"
   );
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
+
+  const today = new Date().toISOString().split("T")[0];
+  const hasCheckedInToday = progress.lastCheckInDate === today && progress.streakDays > 0;
 
   const levelInfo = calculateLevel(progress.xp);
 
@@ -145,17 +150,33 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Consistency Streak */}
-        <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-md space-y-2 shadow-lg">
-          <div className="flex items-center justify-between">
-            <span className="text-base font-mono text-slate-400 font-bold uppercase">Code Streak</span>
-            <Flame className="w-5 h-5 text-rose-400 animate-pulse" />
+        <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-md space-y-2 shadow-lg flex flex-col justify-between">
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-base font-mono text-slate-400 font-bold uppercase">Code Streak</span>
+              <Flame className="w-5 h-5 text-rose-400 animate-pulse" />
+            </div>
+            <div className="text-3xl font-black text-white font-mono">
+              {progress.streakDays} <span className="text-base text-slate-400 font-normal">Days Active</span>
+            </div>
           </div>
-          <div className="text-3xl font-black text-white font-mono">
-            {progress.streakDays} <span className="text-base text-slate-400 font-normal">Days Active</span>
-          </div>
-          <p className="text-base text-slate-400">
-            Keep building to protect your streak!
-          </p>
+          {onCheckIn && (
+            <button
+              onClick={() => {
+                sound.playClick();
+                onCheckIn();
+              }}
+              disabled={hasCheckedInToday}
+              className={`w-full py-1.5 px-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                hasCheckedInToday
+                  ? "bg-white/[0.04] border border-amber-500/40 text-amber-300 cursor-default"
+                  : "bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-[#05070a] shadow-[0_0_12px_rgba(245,158,11,0.4)] font-bold animate-pulse"
+              }`}
+            >
+              <Flame className={`w-3.5 h-3.5 ${hasCheckedInToday ? "text-amber-400" : "text-[#05070a]"}`} />
+              <span>{hasCheckedInToday ? "Checked in today ✓" : "Claim Daily +50 XP"}</span>
+            </button>
+          )}
         </div>
 
         {/* Committed Career Goal */}
