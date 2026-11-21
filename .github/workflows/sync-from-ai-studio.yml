@@ -1,0 +1,45 @@
+name: Sync from AI Studio Repository
+
+on:
+  workflow_dispatch:
+
+  schedule:
+    - cron: "*/30 * * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Vercel repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Add AI Studio repository
+        run: |
+          git remote add upstream https://github.com/onlinefirst2026-beep/DavOnLine1st.git
+          git fetch upstream main
+
+      - name: Sync AI Studio version
+        run: |
+          git checkout main
+          git reset --hard upstream/main
+
+      - name: Restore sync workflow
+        run: |
+          git checkout origin/main -- .github/workflows/sync-from-ai-studio.yml || true
+
+      - name: Push updates to Vercel repository
+        run: |
+          git add -A
+          git commit -m "Sync from AI Studio" || echo "No changes to commit"
+          git push origin main --force
